@@ -1,23 +1,32 @@
-import logo from './logo.svg';
-import './App.css';
+import Topbar from './components/topbar/Topbar';
+import Sidebar from './components/sidebar/Sidebar';
+import "./App.css" 
+import "./defaultApp.css"
+import Attendance from './components/pages/attendance/Attendance';
+import { BrowserRouter as Router, Routes, Route, createBrowserRouter } from 'react-router-dom';
+import Parcel from './components/pages/parcel/Parcel';
+import ViewAttendance from './components/pages/attendance/ViewAttendance';
+import Account from './components/pages/account/Account';
+import ViewParcel from './components/pages/parcel/ViewParcel';
 
 function App() {
+  
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    
+    <div>
+      <Topbar/>
+      <div className="container">
+        <Sidebar/>
+        
+        <Routes>
+          <Route path='/' element={<Attendance/>} />
+          <Route path='/parcel' element={<Parcel/>} />
+          <Route path='/view-parcel' element={<ViewParcel/>}/>
+          <Route path='/view-attendance' element={<ViewAttendance/>} />
+          <Route path='/view-accounts' element={<Account/>} />
+        </Routes>
+  
+      </div>
     </div>
   );
 }
