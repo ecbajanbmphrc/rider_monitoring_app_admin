@@ -142,12 +142,13 @@ export default function ViewAttendance(){
    
     async function getUser(){
         const body = {user: userEmail };
+        console.log(userEmail, "test email")
 
         await  axios
           .post('http://192.168.50.139:8082/view-user-attendance', body)
           .then(async response=> {
             const data = await response.data.data;
-  
+            console.log(data)
             const newData = data.map((data, key) => {
               return {
                  count : key + 1,
@@ -197,6 +198,7 @@ export default function ViewAttendance(){
         }}
         pageSizeOptions={[5, 10]}
         getRowId={(row) =>  row.count}
+        loading={!userData.length}
       />
        </div>
 

@@ -1,6 +1,6 @@
 import "./parcel.css"
 import * as React from 'react';
-import { DataGrid} from '@mui/x-data-grid';
+import {GridToolbar,  DataGrid} from '@mui/x-data-grid';
 import axios from "axios";
 import { Button, Stack, buttonBaseClasses } from "@mui/material";
 import Typography from '@mui/material/Typography';
@@ -11,20 +11,27 @@ import { Link } from "react-router-dom";
 
 
 
-
-
-
   const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 400,
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 24,
-    p: 4,
+    // position: 'absolute',
+    // top: '50%',
+    // left: '50%',
+    // transform: 'translate(-50%, -50%)',
+    // width: 400,
+    // bgcolor: 'background.paper',
+    // border: '2px solid #000',
+    // boxShadow: 24,
+    // p: 4,
+    
+    position: "absolute",
+    backgroundColor: "#FFF",
+    padding: "15px",
+    zIndex: "1000",
+    width: "35%",
+    borderRadius: ".5em"
   };
+
+  
+  
 
     
   
@@ -135,6 +142,18 @@ export default function Parcel(){
               paginationModel: { page: 0, pageSize: 10 },
             },
           }}
+          slots={{ toolbar: GridToolbar }}
+          slotProps={{
+            toolbar: {
+            
+              showQuickFilter: true,
+            },
+          }}
+          loading={!userData.length}  
+          disableDensitySelector
+          disableColumnFilter
+          disableColumnSelector
+          disableRowSelectionOnClick
           pageSizeOptions={[5, 10]}
           getRowId={(row) =>  row.count}
 
@@ -147,6 +166,7 @@ export default function Parcel(){
             aria-labelledby="modal-modal-title"
             aria-describedby="modal-modal-description"
           >
+         
             <Box sx={style}>
               <Typography id="modal-modal-title" variant="h6" component="h2">
                 Text in a modal
@@ -155,6 +175,7 @@ export default function Parcel(){
                 Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
               </Typography>
             </Box>
+
           </Modal>
 
       </div>

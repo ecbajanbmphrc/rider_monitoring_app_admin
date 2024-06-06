@@ -6,7 +6,7 @@ export default function Topbar(){
         <div className="topbar">
             <div className="topbarWrapper">
                 <div className="topLeft">
-                    <span className="logo">Rider App</span>
+                    <span className="logo">BMPower Rider App</span>
                 </div>
           
             </div>
