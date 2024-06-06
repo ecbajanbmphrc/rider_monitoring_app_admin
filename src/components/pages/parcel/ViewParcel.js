@@ -32,6 +32,20 @@ export default function ViewParcel(){
   const userEmail = location.state.state; 
 
 
+  const OVERLAY_STYLE = {
+    position: "fixed",
+    display: "flex",
+    justifyContent: "center",
+    top: "0",
+    left: "0",
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0,0,0, .8)",
+    zIndex: "1000",
+    overflowY: "auto"
+  };
+
+
   const columns = [
     { field: 'count', headerName: '#', width: 150 },
     { field: 'date', headerName: 'Date', width: 225 },
@@ -256,12 +270,10 @@ export default function ViewParcel(){
             aria-labelledby="modal-modal-title"
             aria-describedby="modal-modal-description"
           >
-          <Box
 
-    sx={style}
-    >
+          <Box sx={style}>
       <DataGrid
-        autoHeight
+        // autoHeight
         disableColumnFilter
         disableRowSelectionOnClick
         hideFooter
@@ -270,6 +282,7 @@ export default function ViewParcel(){
         getCellClassName={getCellClassName}
         columns={columnss}
         rows={rows}
+        loading={!userData.length}
         // initialState={{
         //     pagination: {
         //       paginationModel: { page: 0, pageSize: 5 },
@@ -283,6 +296,7 @@ export default function ViewParcel(){
         //  getRowId={(row) =>  row.parcel_count}
       />
     </Box>
+
         </Modal>
 
 

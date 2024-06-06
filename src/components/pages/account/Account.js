@@ -15,7 +15,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useDemoData  } from '@mui/x-data-grid-generator';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
-
+import LinearProgress from '@mui/material/LinearProgress';
 
   const style = {
     position: 'absolute',
@@ -231,7 +231,9 @@ export default function Account(){
         <div style={{ height: '100%', width : '100%', marginLeft: '100'}}>
         <DataGrid
           rows={userData}
+          sx={{ overflowX: 'scroll' }}
           columns={columns}
+
           initialState={{
             pagination: {
               paginationModel: { page: 0, pageSize: 10 },
@@ -245,11 +247,21 @@ export default function Account(){
               },
             },
           }}
-          slots={{
-            toolbar: CustomToolbar,
+          // slots={{
+          //   toolbar: CustomToolbar,
+          //   // loadingOverlay: LinearProgress,
+          // }}
+          slots={{ toolbar: GridToolbar }}
+          slotProps={{
+            toolbar: {
+            
+              showQuickFilter: true,
+            },
           }}
-
-        //   slots={{ toolbar: GridToolbar }}
+          loading={!userData.length}
+          disableDensitySelector
+          disableColumnFilter
+          disableColumnSelector
           pageSizeOptions={[5, 10]}
           getRowId={(row) =>  row.count}
           disableRowSelectionOnClick
