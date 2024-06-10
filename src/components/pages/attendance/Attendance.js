@@ -1,5 +1,5 @@
 import "./attendance.css"
-import * as React from 'react';
+import React, {useEffect, useState} from "react";
 import { DataGrid, GridToolbar} from '@mui/x-data-grid';
 import axios from "axios";
 import { Inventory, AssignmentInd, AlignHorizontalCenter} from "@mui/icons-material";
@@ -13,27 +13,45 @@ import { TileLayer } from 'react-leaflet/TileLayer'
 import { Marker, Popup } from "react-leaflet"
 import {Icon} from 'leaflet'
 import markerIconPng from "leaflet/dist/images/marker-icon.png"
-
-
-
-
- 
+import XLSX from "xlsx";
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
     
   
 
 export default function Attendance(){
 
-  const [userData, setUserData] = React.useState([]);  
+  const [userData, setUserData] = useState([]);  
 
     const body = {test: "test"};
-    const [open, setOpen] = React.useState(false);
+    const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);  
-    const [latitude , setLatitude] = React.useState();
-    const [longitude, setLongitude] = React.useState();
-    const [city, setCity] = React.useState();
-    const [street, setStreet] = React.useState();
+    const [latitude , setLatitude] = useState();
+    const [longitude, setLongitude] = useState();
+    const [city, setCity] = useState();
+    const [street, setStreet] = useState();
+    const [sheetData, setSheetData] = useState(null);
+    const [dateBegin, setDateBegin] = useState(null);
+    const [dateEnd, setDateEnd] = useState(null);
+
+    const [openDialog, setOpenDialog] = React.useState(false);
+
+    const handleOpenDialog = () => {
+      setOpenDialog(true);
+    };
+  
+    const handleCloseDialog = () => {
+      setOpenDialog(false);
+    };
+
 
     const columns = [
       { field: 'count', headerName: '#', width: 100 },
@@ -75,11 +93,7 @@ export default function Attendance(){
             <>
            {check === "no record" ? 
 
-        
-            
            "no record"
-
-           
 
            :
 
@@ -176,6 +190,30 @@ export default function Attendance(){
 
     ];
 
+    async function handleOnExport() {
+
+
+      // let bDate = dateBegin.$d.toLocaleString('en-us', {month: 'numeric', day: 'numeric', year:'numeric'});
+
+      const bDate = dateBegin.$d;
+
+      const eDate = dateEnd.$d;
+
+
+      const newBDate = bDate.getTime();
+
+      // var wb = XLSX.utils.book_new(),
+      // ws = XLSX.utils.json_to_sheet(sheetData);
+
+      // XLSX.utils.book_append_sheet(wb, ws, "MySheet1");
+
+      // XLSX.writeFile(wb, "MyExcel.xlsx");
+
+      console.log(bDate, "test date");
+      console.log(eDate, "test date");
+
+    };
+
     async function getUser(){
       await  axios
         .post('http://192.168.50.139:8082/retrieve-user-attendance-today', body)
@@ -206,6 +244,54 @@ export default function Attendance(){
     }
 
 
+    async function getExportData(){
+
+      let bDate = dateBegin.$d.getTime();
+
+      let eDate = dateEnd.$d.getTime();
+
+      console.log(bDate);
+      
+      const passData = {
+        start : bDate,
+        end : eDate
+      } 
+      await  axios
+        .post('http://192.168.50.139:8082/test-index', passData)
+        .then(async response=> {
+          const data = await response.data.data;
+
+          console.log(data)
+
+          const newData = data.map((data, key) => {
+            
+            return {
+               count : key + 1,
+               email: data.user,
+               date : data.attendance.date,
+               time_in: data.attendance.time_in,
+               time_out: data.attendance.time_out? data.attendance.time_out: "no record",
+              
+              
+            };
+           }
+          );
+          // console.log(newData, "testing par");
+          setSheetData(newData);
+    
+          var wb = XLSX.utils.book_new(),
+          ws = XLSX.utils.json_to_sheet(newData);
+    
+          XLSX.utils.book_append_sheet(wb, ws, "MySheet1");
+    
+          XLSX.writeFile(wb, "MyExcel.xlsx");
+
+
+          return
+
+        });
+
+    }
 
     
     React.useEffect(() => {
@@ -214,11 +300,17 @@ export default function Attendance(){
     }, []);
 
 
-
     return(
+
         <div className="attendance">
-  
-        <div style={{ height: '100%', width : '100%', marginLeft: '100'}}>
+          <div>
+          <div style={{margin: 10}}>
+            <Button onClick={handleOpenDialog} variant="contained">Export</Button>
+          </div>
+              
+        <div style={{ height:'100%',  width : '100%', marginLeft: '100'}}>
+         
+        
         <DataGrid
           rows={userData}
           columns={columns}
@@ -283,6 +375,42 @@ export default function Attendance(){
          </Box>
         </Modal>
 
+
+        <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        >
+        <DialogTitle id="alert-dialog-title">
+          {"Export Data"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePicker label="Select Start Date"
+            onChange={(newValue) => setDateBegin(newValue)}>
+            </DatePicker>
+            <div style={{margin:10}}></div>
+            <DatePicker label="Select End Date"
+            onChange={(newValue) => setDateEnd(newValue)}>  
+            </DatePicker>
+          </LocalizationProvider>
+            
+         
+          
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick= {handleCloseDialog}>Cancel</Button>
+          <Button onClick={getExportData}>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+
+        </div>
       </div>
           
     );
