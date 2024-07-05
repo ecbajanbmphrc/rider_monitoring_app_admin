@@ -19,7 +19,9 @@
     "react-leaflet": "^4.2.1",
     "react-router-dom": "^6.23.1",
     "react-scripts": "5.0.1",
+    "sheetjs-style": "^0.15.8",
     "styled-components": "^6.1.11",
+    "sweetalert2": "^11.11.1",
     "web-vitals": "^2.1.4",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.2/xlsx-0.20.2.tgz"
   },

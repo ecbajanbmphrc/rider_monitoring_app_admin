@@ -12,6 +12,8 @@ import 'leaflet/dist/leaflet.css'
 import markerIconPng from "leaflet/dist/images/marker-icon.png"
 import {Icon} from 'leaflet'
 import { Marker, Popup } from "react-leaflet"
+import Topbar from "../../topbar/Topbar";
+import Sidebar from "../../sidebar/Sidebar";
 
   
 
@@ -75,7 +77,7 @@ export default function ViewParcel(){
             const body = {user: userEmail, date : modalParcelDate};
 
             await  axios
-              .post('http://192.168.50.139:8082/retrieve-parcel-input', body)
+              .post('http://localhost:8082/retrieve-parcel-input', body)
               .then(async response=> {
                 const data = await response.data.data[0].parcel;
                 console.log(data, "parecl data");
@@ -128,7 +130,7 @@ export default function ViewParcel(){
         const body = {user: userEmail };
 
         await  axios
-          .post('http://192.168.50.139:8082/retrieve-user-parcel-data', body)
+          .post('http://localhost:8082/retrieve-user-parcel-data', body)
           .then(async response=> {
             const data = await response.data.data;
   
@@ -244,6 +246,9 @@ export default function ViewParcel(){
 
     return(
         <div className="parcel">
+          <Topbar/>
+         <div className="container">
+          <Sidebar/>  
           <div style={{ height: 400, width: '100%' }}>
       <DataGrid
         rows={userData}
@@ -299,7 +304,7 @@ export default function ViewParcel(){
 
         </Modal>
 
-
+        </div>
       </div>
     )
 }

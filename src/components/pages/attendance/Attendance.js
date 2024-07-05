@@ -2,7 +2,7 @@ import "./attendance.css"
 import React, {useEffect, useState} from "react";
 import { DataGrid, GridToolbar} from '@mui/x-data-grid';
 import axios from "axios";
-import { Inventory, AssignmentInd, AlignHorizontalCenter} from "@mui/icons-material";
+import { FileDownload} from "@mui/icons-material";
 import { Button, Stack } from "@mui/material";
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
@@ -13,7 +13,6 @@ import { TileLayer } from 'react-leaflet/TileLayer'
 import { Marker, Popup } from "react-leaflet"
 import {Icon} from 'leaflet'
 import markerIconPng from "leaflet/dist/images/marker-icon.png"
-import XLSX from "xlsx";
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -22,13 +21,20 @@ import DialogTitle from '@mui/material/DialogTitle';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import Alert from '@mui/material/Alert';
+import Swal from "sweetalert2";
+import Topbar from "../../topbar/Topbar";
+import Sidebar from "../../sidebar/Sidebar";
 
     
   
 
 export default function Attendance(){
 
-  const [userData, setUserData] = useState([]);  
+    const [userData, setUserData] = useState([]);  
+
+  
+    const XLSX = require('sheetjs-style');
 
     const body = {test: "test"};
     const [open, setOpen] = useState(false);
@@ -41,6 +47,7 @@ export default function Attendance(){
     const [sheetData, setSheetData] = useState(null);
     const [dateBegin, setDateBegin] = useState(null);
     const [dateEnd, setDateEnd] = useState(null);
+    // const [exportSuccess, setExportSucess] = useState();
 
     const [openDialog, setOpenDialog] = React.useState(false);
 
@@ -49,6 +56,8 @@ export default function Attendance(){
     };
   
     const handleCloseDialog = () => {
+      setDateBegin(null)
+      setDateEnd(null)
       setOpenDialog(false);
     };
 
@@ -58,6 +67,11 @@ export default function Attendance(){
       {
         field: 'email',
         headerName: 'Email',
+        width: 250,
+      },
+      {
+        field: 'fullname',
+        headerName: 'Fullname',
         width: 250,
       },
       { field: 'time_in', headerName: 'Time In', width: 175},
@@ -88,7 +102,7 @@ export default function Attendance(){
 
             return
           };
-          const check = params.row.time_out;
+          const check = params.row.time_in;
           return (
             <>
            {check === "no record" ? 
@@ -125,7 +139,7 @@ export default function Attendance(){
 
             const userLatitude = await currentRow.time_out_coordinates.latitude;
             const userLongitude = await currentRow.time_out_coordinates.longitude;
-            const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${userLatitude}&lon=${userLongitude}`;
+            const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${userLatitude}&lon=${userLongitude}`;
             fetch(url)
             .then( res => res.json())
             .then(data=>{
@@ -190,6 +204,67 @@ export default function Attendance(){
 
     ];
 
+    function alertDialog (exportSuccess, message){
+
+      // Swal.fire({
+      //   title: "Good job!",
+      //   text: "You clicked the button!",
+      //   icon: "success"
+      // });
+
+      
+      const ExportSuccess = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.onmouseenter = Swal.stopTimer;
+          toast.onmouseleave = Swal.resumeTimer;
+        }
+      });
+
+      const ExportFailed = Swal.mixin({
+        toast: true,
+        position: "mid",
+      });
+
+      if(exportSuccess){
+     
+        ExportSuccess.fire({
+          icon: "success",
+          title: message
+        })
+        handleCloseDialog();
+      }else{
+
+        ExportFailed.fire({
+          icon: "error",
+          title: message
+        })
+      }
+
+   
+
+    
+  
+    }
+
+
+    const handleDlgClose = (event, reason) => {
+      if (reason && reason === "backdropClick") {
+        console.log('backdropClicked. Not closing dialog.')
+        return;
+      }
+
+      handleCloseDialog()
+    }
+
+
+   
+   
+
     async function handleOnExport() {
 
 
@@ -230,7 +305,8 @@ export default function Attendance(){
                time_out: data.timeOut? data.timeOut: "no record",
                time_in_coordinates: data.timeInCoordinates,
                time_out_coordinates: data.timeOutCoordinates,
-               email: data.user
+               email: data.user,
+               fullname: data.first_name + " " + data.middle_name + " " + data.last_name
               
             };
            }
@@ -245,19 +321,30 @@ export default function Attendance(){
 
 
     async function getExportData(){
+     
+      console.log("date for now" , dateBegin)
+      if(dateBegin === null || dateEnd === null) {return alertDialog(false, "Please fill date fields")}
 
+    
       let bDate = dateBegin.$d.getTime();
 
-      let eDate = dateEnd.$d.getTime();
+      let eDate = (dateEnd.$d.getTime()) + 86400000;
 
+      const checkDate = eDate - bDate;
+
+      if(checkDate <= 0) return alertDialog(false, "End date must be ahead or same day of start date")
+
+   
       console.log(bDate);
       
       const passData = {
         start : bDate,
         end : eDate
       } 
+
+      console.log(passData);
       await  axios
-        .post('http://192.168.50.139:8082/test-index', passData)
+        .post('http://192.168.50.139:8082/export-attendance-data', passData)
         .then(async response=> {
           const data = await response.data.data;
 
@@ -267,10 +354,11 @@ export default function Attendance(){
             
             return {
                count : key + 1,
+               fullname: data.first_name + " " + data.last_name,
                email: data.user,
-               date : data.attendance.date,
-               time_in: data.attendance.time_in,
-               time_out: data.attendance.time_out? data.attendance.time_out: "no record",
+               date : data.date,
+               time_in: data.timeIn,
+               time_out: data.timeOut? data.timeOut: "no record",
               
               
             };
@@ -279,15 +367,150 @@ export default function Attendance(){
           // console.log(newData, "testing par");
           setSheetData(newData);
     
-          var wb = XLSX.utils.book_new(),
-          ws = XLSX.utils.json_to_sheet(newData);
+          const wb = XLSX.utils.book_new();
+
+          const ws = XLSX.utils.json_to_sheet(newData);
+
+          const max_width = newData.reduce((wb, r) => Math.max(wb, r.email.length), 10);
+
+          
+
+          ws["!cols"] = [{wch: 4}, {wch: 30},{wch: 30} , {wch: 10} , {wch: 15} , {wch: 15}];
+
+          XLSX.utils.sheet_add_aoa(ws, [["#", "Fullname","Email" , "Date", "Time In", "Time Out"]], { origin: "A1" });
+          
+
+          ws["A1"].s = { // set the style for target cell
+            font: {
+              name: '#',
+              sz: 10,
+              bold: true,
+              color: {
+                rgb: "FFFFFFF"
+              },
+            },
+            alignment:{
+              vertical : "center",
+              horizontal: "center"
+            },
+            fill: {
+              patternType: "solid",
+              bgColor: {
+                rgb: "FFFFFFF" 
+              },
+            }
+          };
+          ws["B1"].s = { // set the style for target cell
+            font: {
+              name: '#',
+              sz: 10,
+              bold: true,
+              color: {
+                rgb: "FFFFFFF"
+              },
+            },
+            alignment:{
+              vertical : "center",
+              horizontal: "center"
+            },
+            fill: {
+              patternType: "solid",
+              bgColor: {
+                rgb: "FFFFFFF" 
+              },
+            }
+          };
+          ws["C1"].s = { // set the style for target cell
+            font: {
+              name: '#',
+              sz: 10,
+              bold: true,
+              color: {
+                rgb: "FFFFFFF"
+              },
+            },
+            alignment:{
+              vertical : "center",
+              horizontal: "center"
+            },
+            fill: {
+              patternType: "solid",
+              bgColor: {
+                rgb: "FFFFFFF" 
+              },
+            }
+          };
+          ws["D1"].s = { // set the style for target cell
+            font: {
+              name: '#',
+              sz: 10,
+              bold: true,
+              color: {
+                rgb: "FFFFFFF"
+              },
+            },
+            alignment:{
+              vertical : "center",
+              horizontal: "center"
+            },
+            fill: {
+              patternType: "solid",
+              bgColor: {
+                rgb: "FFFFFFF" 
+              },
+            }
+          };
+          ws["E1"].s = { // set the style for target cell
+            font: {
+              name: '#',
+              sz: 10,
+              bold: true,
+              color: {
+                rgb: "FFFFFFF"
+              },
+            },
+            alignment:{
+              vertical : "center",
+              horizontal: "center"
+            },
+            fill: {
+              patternType: "solid",
+              bgColor: {
+                rgb: "FFFFFFF" 
+              },
+            }
+          };
+          ws["F1"].s = { // set the style for target cell
+            font: {
+              name: '#',
+              sz: 10,
+              bold: true,
+              color: {
+                rgb: "FFFFFFF"
+              },
+            },
+            alignment:{
+              vertical : "center",
+              horizontal: "center"
+            },
+            fill: {
+              patternType: "solid",
+              bgColor: {
+                rgb: "FFFFFFF" 
+              },
+            }
+          };
+         
     
           XLSX.utils.book_append_sheet(wb, ws, "MySheet1");
     
           XLSX.writeFile(wb, "MyExcel.xlsx");
 
-
-          return
+          
+        
+          alertDialog(true, "Data exported successfully");
+        
+          // return
 
         });
 
@@ -303,13 +526,15 @@ export default function Attendance(){
     return(
 
         <div className="attendance">
-          <div>
-          <div style={{margin: 10}}>
-            <Button onClick={handleOpenDialog} variant="contained">Export</Button>
-          </div>
+          <Topbar/>
+          <div className="container">
+          <Sidebar/>
+          
               
         <div style={{ height:'100%',  width : '100%', marginLeft: '100'}}>
-         
+        <div style={{margin: 10}}>
+            <Button onClick={handleOpenDialog} variant="contained" endIcon={<FileDownload/>}>Export</Button>
+        </div>
         
         <DataGrid
           rows={userData}
@@ -320,9 +545,9 @@ export default function Attendance(){
             },
             columns: {
               columnVisibilityModel: {
-                // Hide columns status and traderName, the other columns will remain visible
                 time_in_coordinates: false,
-                time_out_coordinates: false   
+                time_out_coordinates: false,
+                email:false
                
               },
             },
@@ -330,8 +555,9 @@ export default function Attendance(){
           slots={{ toolbar: GridToolbar }}
           slotProps={{
             toolbar: {
-            
               showQuickFilter: true,
+              printOptions: { disableToolbarButton: true },
+              csvOptions: { disableToolbarButton: true },
             },
           }}
           loading={!userData.length}  
@@ -341,6 +567,7 @@ export default function Attendance(){
           disableColumnSelector
           disableRowSelectionOnClick
           disableDensitySelector
+          disableVirtualization
           pageSizeOptions={[5, 10]}
           getRowId={(row) =>  row.count}
 
@@ -358,7 +585,7 @@ export default function Attendance(){
    
          
            <div className="leaflet-container">
-            <MapContainer center={[latitude, longitude]} zoom={17} scrollWheelZoom={false}  style={{ height: "100%", minHeight: '100%' }}>
+            <MapContainer center={[latitude, longitude]} zoom={17} scrollWheelZoom={false}  style={{ height: '100%', minHeight: '100%' }}>
             <TileLayer
              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -378,7 +605,7 @@ export default function Attendance(){
 
         <Dialog
         open={openDialog}
-        onClose={handleCloseDialog}
+        onClose={handleDlgClose}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
         >
@@ -397,7 +624,7 @@ export default function Attendance(){
             </DatePicker>
           </LocalizationProvider>
             
-         
+        
           
           </DialogContentText>
         </DialogContent>
@@ -409,7 +636,9 @@ export default function Attendance(){
         </DialogActions>
       </Dialog>
 
+     
 
+      
         </div>
       </div>
           

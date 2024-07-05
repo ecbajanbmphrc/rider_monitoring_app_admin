@@ -3,10 +3,12 @@
     height: 50px;
     background-color: darkblue;
     display: flex;
+    position: static;
 }
 
 .topbarWrapper{
     height: 100%;
+    width: 100%;
     padding: 0px 20px;
     display: flex;
     align-items: center;
