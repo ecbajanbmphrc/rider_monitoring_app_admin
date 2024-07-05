@@ -291,7 +291,7 @@ export default function Attendance(){
 
     async function getUser(){
       await  axios
-        .post('http://192.168.50.139:8082/retrieve-user-attendance-today', body)
+        .post('https://rider-monitoring-app-backend.onrender.com/retrieve-user-attendance-today', body)
         .then(async response=> {
           const data = await response.data.data;
 
@@ -344,7 +344,7 @@ export default function Attendance(){
 
       console.log(passData);
       await  axios
-        .post('http://192.168.50.139:8082/export-attendance-data', passData)
+        .post('https://rider-monitoring-app-backend.onrender.com/export-attendance-data', passData)
         .then(async response=> {
           const data = await response.data.data;
 
