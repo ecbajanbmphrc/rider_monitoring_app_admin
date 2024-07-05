@@ -14,6 +14,8 @@ import 'leaflet/dist/leaflet.css'
 import markerIconPng from "leaflet/dist/images/marker-icon.png"
 import {Icon} from 'leaflet'
 import { Marker, Popup } from "react-leaflet"
+import Topbar from "../../topbar/Topbar";
+import Sidebar from "../../sidebar/Sidebar";
 
   
 
@@ -145,7 +147,7 @@ export default function ViewAttendance(){
         console.log(userEmail, "test email")
 
         await  axios
-          .post('http://192.168.50.139:8082/view-user-attendance', body)
+          .post('http://localhost:8082/view-user-attendance', body)
           .then(async response=> {
             const data = await response.data.data;
             console.log(data)
@@ -177,8 +179,11 @@ export default function ViewAttendance(){
 
 
     return(
-        <div className="attendance">
-          <div style={{ height: 400, width: '100%' }}>
+      <div className="attendance">
+        <Topbar/>
+        <div className="container">
+          <Sidebar/>
+        <div style={{ height: 400, width: '100%' }}>
       <DataGrid
         rows={userData}
         columns={columns}
@@ -230,7 +235,7 @@ export default function ViewAttendance(){
          </Box>
         </Modal>
 
-
+        </div>
       </div>
     )
 }
@@ -241,8 +246,8 @@ const style = {
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: 600,
-  height: 600,
+  width: 400,
+  height: 400,
   bgcolor: 'background.paper',
   border: '2px solid #000',
   boxShadow: 24,

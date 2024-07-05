@@ -6,7 +6,6 @@ import { Button, Stack } from "@mui/material";
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
-import { Link } from "react-router-dom";
 import { styled } from '@mui/material/styles';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -14,8 +13,16 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useDemoData  } from '@mui/x-data-grid-generator';
-import HighlightOffIcon from '@mui/icons-material/HighlightOff';
-import LinearProgress from '@mui/material/LinearProgress';
+import TextField from '@mui/material/TextField';
+import { Warehouse} from "@mui/icons-material";
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import MenuItem from '@mui/material/MenuItem';
+import Topbar from "../../topbar/Topbar";
+import Sidebar from "../../sidebar/Sidebar";
+
 
   const style = {
     position: 'absolute',
@@ -52,10 +59,14 @@ export default function Account(){
     const [openModal, setOpenModal] = React.useState(false);
     const handleOpen = () => setOpenModal(true);
     const handleClose = () => setOpenModal(false);  
+    const [openHubDialog, setOpenHubDialog] = React.useState(false);
+    const [updateHub, setUpdateHub] = React.useState('');
+    const [updateHubId, setUpdateHubId] = React.useState('');
+
+
 
     const [updateStatus, setUpdateStatus] = React.useState('');
     const [userEmail, setUserEmail] = React.useState('');
-    var test = "testing";
 
     const requestBody  = { isActivate: updateStatus, email: userEmail  };
 
@@ -63,6 +74,29 @@ export default function Account(){
     const[modalAddress, setModalAddress] = React.useState('');
     const[modalEmail, setModalEmail] = React.useState('');
     const[modalPhone, setModalPhone] = React.useState('');
+    const[modalJDate, setModalJDate] = React.useState('');
+    const[modalHubName, setModalHubName] = React.useState('');
+    const[modalHubId, setModalHubId] = React.useState('');
+    const[hubList, setHubList] = React.useState([]);
+
+
+    const handleSelectHub = (event) => {
+      setUpdateHub(event.target.value || '');
+
+    };
+
+    const handleOpenHubDialog = () => {
+      setOpenHubDialog(true);
+    };
+
+    const handleCloseHubDialog = (event, reason) => {
+      if (reason !== 'backdropClick') {
+       
+        setOpenHubDialog(false);
+        setUpdateHub('');
+      }
+
+    };
 
 
     const [openDialog, setOpenDialog] = React.useState(false);
@@ -73,7 +107,9 @@ export default function Account(){
   
     const handleCloseDialog = () => {
       setOpenDialog(false);
+   
     };
+
 
     const columns = [
       { field: 'count', headerName: '#', width: 150 },
@@ -92,6 +128,18 @@ export default function Account(){
       {
         field: 'address',
         headerName: 'Address',
+      },
+      {
+        field: 'date_join',
+        headerName: 'Date Join',
+      },
+      {
+        field: 'hub_name',
+        headerName: 'Hub Name',
+      },
+      {
+        field: 'hub_id',
+        headerName: 'Hub ID',
       },
       {
         field: 'isActive',
@@ -149,6 +197,9 @@ export default function Account(){
               let mAddress = params.row.address;
               let mEmail = params.row.email;
               let mPhone = params.row.phone;
+              let mJDate = params.row.date_join;
+              let mHubName = params.row.hub_name;
+              let mHubId = params.row.hub_id;
               if (condition === "Null"){
                 mFullname = params.row.first_name + " " + params.row.last_name;
               }else{
@@ -159,6 +210,9 @@ export default function Account(){
               setModalAddress(mAddress);
               setModalEmail(mEmail);
               setModalPhone(mPhone);
+              setModalJDate(mJDate);
+              setModalHubId(mHubId);
+              setModalHubName(mHubName);
              
               return handleOpen();
             };
@@ -176,7 +230,7 @@ export default function Account(){
 
     async function getUser(){
       await  axios
-        .post('http://192.168.50.139:8082/get-all-user', requestBody)
+        .post('http://localhost:8082/get-rider-user', requestBody)
         .then(async response=> {
           const data = await response.data.data;
 
@@ -191,7 +245,10 @@ export default function Account(){
                email: data.email,
                address: data.address,
                phone: data.phone,
-               isActive: data.isActivate
+               date_join: data.j_date? new Date(data.j_date).toLocaleDateString('en-us', {month: 'long', day: 'numeric', year: 'numeric'}): "Null",
+               isActive: data.isActivate,
+               hub_id: data.hub_id,
+               hub_name: data.hub_name[0]? data.hub_name[0] : "no data"
                
             };
            }
@@ -204,10 +261,37 @@ export default function Account(){
 
     }
 
+
+    async function getHubList(){
+      await  axios
+        .post('http://localhost:8082/fetch-hub', requestBody)
+        .then(async response=> {
+          const data = await response.data.data;
+
+        
+          console.log(data);
+          const newData = data.map((data, key) => {
+            return {
+              count : key + 1,
+              id: data._id,
+              hub_name : data.hub_name,
+               
+            };
+           }
+          );
+          console.log(newData, "testing par");
+          setHubList(newData);
+          setUpdateHub(modalHubId);
+
+          handleOpenHubDialog();
+        });
+
+    }
+
     async function setStatus(){
         console.log("check body" , requestBody);
         await  axios
-          .put('http://192.168.50.139:8082/update-status', requestBody)
+          .put('http://localhost:8082/update-status', requestBody)
           .then(async response=> {
             const data = await response.data.data;
   
@@ -217,6 +301,21 @@ export default function Account(){
           });
   
     }
+
+    async function updateUserHub(){
+        await  axios
+          .put('http://localhost:8082/update-user-hub', {hub_id: updateHub, email: modalEmail} )
+          .then(async response=> {
+            const data = await response.data.data;
+  
+            console.log(data);
+            window.location.reload();
+  
+          });
+  
+    }
+
+
     
     React.useEffect(() => {
         getUser();
@@ -227,7 +326,9 @@ export default function Account(){
 
     return(
         <div className="account">
-  
+          <Topbar/>
+         <div className="container">
+         <Sidebar/>
         <div style={{ height: '100%', width : '100%', marginLeft: '100'}}>
         <DataGrid
           rows={userData}
@@ -242,7 +343,10 @@ export default function Account(){
               columnVisibilityModel: {
                 // Hide columns status and traderName, the other columns will remain visible
                 address: false,
-                phone: false   
+                phone: false,
+                date_join: false,
+                hub_name: false,
+                hub_id: false
                
               },
             },
@@ -254,17 +358,21 @@ export default function Account(){
           slots={{ toolbar: GridToolbar }}
           slotProps={{
             toolbar: {
-            
               showQuickFilter: true,
+              printOptions: { disableToolbarButton: true },
+              csvOptions: { disableToolbarButton: true },
             },
           }}
           loading={!userData.length}
-          disableDensitySelector
+          disableDen
+          sitySelector
           disableColumnFilter
           disableColumnSelector
+          disableRowSelectionOnClick
+          disableDensitySelector
+          disableVirtualization
           pageSizeOptions={[5, 10]}
           getRowId={(row) =>  row.count}
-          disableRowSelectionOnClick
 
         />
         </div>
@@ -276,20 +384,71 @@ export default function Account(){
             aria-describedby="modal-modal-description"
           >
             <Box sx={style}>
-              <Typography id="modal-modal-title" variant="h6" component="h2">
-                Full Details : 
-                 {/* <HighlightOffIcon/> */}
-                {/* {test} */}
-              </Typography>
-              <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-              <span className="detailTitle">Full name:</span>   <span className="detailDescription">{modalFullName}</span>
-              <br></br>
-              <span className="detailTitle">Address:</span>   <span className="detailDescription">{modalAddress}</span>
-              <br></br>
-              <span className="detailTitle">Email:</span>   <span className="detailDescription">{modalEmail}</span>   
-              <br></br>
-              <span className="detailTitle">Phone:</span>   <span className="detailDescription">{modalPhone}</span>
-              </Typography>
+             
+              <Stack spacing={3}>
+              <p>
+                Full Details :
+              </p>
+
+              <TextField
+                label="Fullname"
+                id="outlined-read-only-input"
+                defaultValue={modalFullName}
+                InputProps={{
+                    readOnly: true,
+                }}
+              />
+              <TextField
+                label="Address"
+                id="outlined-read-only-input"
+                defaultValue={modalAddress}
+                InputProps={{
+                    readOnly: true,
+                }}
+              />
+              <TextField
+                label="Email"
+                id="outlined-read-only-input"
+                defaultValue={modalEmail}
+                InputProps={{
+                    readOnly: true,
+                }}
+              />
+              <TextField
+                label="Phone"
+                id="outlined-read-only-input"
+                defaultValue={modalPhone}
+                InputProps={{
+                    readOnly: true,
+                }}
+              />
+               <TextField
+                label="Hub"
+                id="outlined-read-only-input"
+                defaultValue={modalHubName}
+                InputProps={{
+                    readOnly: true,
+                    endAdornment: <Button variant="contained" onClick={getHubList} ><Warehouse/></Button>
+                }}
+              />
+              <TextField
+                label="Date Joined"
+                id="outlined-read-only-input"
+                defaultValue={modalJDate}
+                InputProps={{
+                    readOnly: true,
+                }}
+              />
+              {/* <TextField
+                label="Hub"
+                id="outlined-read-only-input"
+                defaultValue={modalhub}
+                InputProps={{
+                    readOnly: true,
+                }}
+              /> */}
+              </Stack>
+              {/* </Typography> */}
               <Stack>
               
 
@@ -327,6 +486,43 @@ export default function Account(){
         </DialogActions>
       </Dialog>
 
+
+      <Dialog disableEscapeKeyDown open={openHubDialog} onClose={handleCloseHubDialog}>
+        <DialogTitle>Select Hub</DialogTitle>
+        <DialogContent>
+          <Box component="form" sx={{ display: 'flex', flexWrap: 'wrap' }}>
+            <FormControl sx={{ m: 1, minWidth: 120 }}>
+              <InputLabel htmlFor="demo-dialog-native">Hub</InputLabel>
+              <Select
+                value={updateHub}
+                onChange={handleSelectHub}
+                input={<OutlinedInput label="Age"/>}
+              >
+                 {/* <MenuItem disabled value="">
+                    <em>Placeholder</em>
+                </MenuItem> */}
+                
+                {
+                  hubList.map((hub) => (
+                  
+                    <MenuItem value={hub.id} key={hub.id}>
+                      {hub.hub_name}
+                    </MenuItem>
+                  ))
+                }
+
+
+              </Select>
+            </FormControl>
+            
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseHubDialog}>Cancel</Button>
+          <Button onClick={updateUserHub}>Ok</Button>
+        </DialogActions>
+      </Dialog>
+       </div>
       </div>
           
     );
