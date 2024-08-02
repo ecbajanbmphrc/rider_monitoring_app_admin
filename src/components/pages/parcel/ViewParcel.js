@@ -14,6 +14,7 @@ import {Icon} from 'leaflet'
 import { Marker, Popup } from "react-leaflet"
 import Topbar from "../../topbar/Topbar";
 import Sidebar from "../../sidebar/Sidebar";
+import ImageViewer from 'react-simple-image-viewer';
 
   
 
@@ -22,12 +23,24 @@ export default function ViewParcel(){
   const [userData, setUserData] = React.useState([]);    
   const location = useLocation();
   const handleClose = () => setOpen(false);  
-  const handleOpen = () => setOpen(true);
+
   const [open, setOpen] = React.useState(false);
   const [parcelItem, setParcelItem] =  React.useState([]);
-  const[parcelItemBulk, setParcelItemBulk] = React.useState();
-  const[parcelItemNonBulk, setParcelItemNonBulk] = React.useState();
-  const[parcelDate, setParcelDate] = React.useState('');
+  const [parcelItemBulk, setParcelItemBulk] = React.useState();
+  const [parcelItemNonBulk, setParcelItemNonBulk] = React.useState();
+  const [parcelDate, setParcelDate] = React.useState('');
+  const [isViewerOpen, setIsViewerOpen] = React.useState(false);
+  const [itemData, setItemData] = React.useState([]);
+
+
+  const handleOpen = (imgArr) => {
+    setItemData(imgArr)
+    setIsViewerOpen(true)
+  }
+
+  const closeImageViewer = () => {
+    setIsViewerOpen(false);
+  };
 
  
 
@@ -54,71 +67,58 @@ export default function ViewParcel(){
     { field: 'bulk', headerName: 'Bulk', width: 225},
     { field: 'non_bulk', headerName: 'Non Bulk', width: 225},
     { field: 'total', headerName: 'Total', width: 200},
-    { field: 'view_more', 
-      headerName: 'Action', 
-      width: 150,
+    { field: 'assigned_parcel', headerName: 'Assigned Parcel', width: 200},
+    {
+      field: "receipt",
+      headerName: "Image",
+      width: 200,
+   
+    },
+    {
+      field: "screenshot",
+      headerName: "Image",
+      width: 200, 
+    },
+    {
+      field: "img",
+      headerName: "Photo",
+      width: 180,
       sortable: false,
       disableClickEventBubbling: true,
-      
+
       renderCell: (params) => {
-
-   
-
-          const onClick = async (e) => {
-            const currentRow = params.row;
-
-            const modalItemBulk = currentRow.bulk;
-            const modalItemNonBulk = currentRow.non_bulk;
-            const modalParcelDate = await currentRow.date;
-         
-            setParcelItemBulk(modalItemBulk);
-            setParcelItemNonBulk(modalItemNonBulk);
-         
-            const body = {user: userEmail, date : modalParcelDate};
-
-            await  axios
-              .post('https://rider-monitoring-app-backend.onrender.com/retrieve-parcel-input', body)
-              .then(async response=> {
-                const data = await response.data.data[0].parcel;
-                console.log(data, "parecl data");
-                const newData = data.map((data, key) => {
-                  return {
-                    //  id: key + 1,
-                     id: "Parcel #" + data.parcel_count,
-                     parcel_type : data.parcel_type,
-                 
-                  };
-                 }
-                );
-               
+        const onClick = (e) => {
+          const currentRow = params.row;
+          const imgArr = currentRow.receipt
+          imgArr.push(currentRow.screenshot)
           
-                setParcelItem(newData);
-              });
-          
-
-           
-            handleOpen(true);    
-        
-
-            return
-          };
-       
-          return (
-            <>
-           
-
-            <Stack style={{marginTop:10}}>
-            
-              <Button variant="contained" color="warning" size="small" onClick={() => {onClick();}}>View</Button>
-          
-           </Stack>
-          
-
-          
-          </>
-          );
-      }, 
+          handleOpen(imgArr);
     
+        };
+
+        const check = params.row.receipt;
+        return (
+      
+          <>
+          {check !== "no record" ? (
+            <Stack style={{ marginTop: 10 }}>
+              <Button
+                variant="contained"
+                color="warning"
+                size="small"
+                onClick={() => {
+                  onClick();
+                }}
+              >
+                View
+              </Button>
+            </Stack>
+          ) : (
+            <Stack style={{ marginBottom: 100 }}>no record</Stack>
+          )}
+        </>
+        );
+      },
     },
 
   ];
@@ -130,9 +130,11 @@ export default function ViewParcel(){
         const body = {user: userEmail };
 
         await  axios
-          .post('https://rider-monitoring-app-backend.onrender.com/retrieve-user-parcel-data', body)
+          .post('http://192.168.50.139:8082/retrieve-user-parcel-data', body)
           .then(async response=> {
             const data = await response.data.data;
+
+            console.log(data)
   
             const newData = data.map((data, key) => {
               return {
@@ -140,7 +142,10 @@ export default function ViewParcel(){
                  date : data.date,
                  bulk: data.count_bulk,
                  non_bulk : data.count_non_bulk,
-                 total: data.count_bulk + data.count_non_bulk,
+                 assigned_parcel: data.assigned_parcel_count,
+                 total: data.count_total_parcel,
+                 receipt : data.receipt? data.receipt : "no record",
+                 screenshot : data.screenshot
              
               };
              }
@@ -152,11 +157,6 @@ export default function ViewParcel(){
   
     }
 
-    async function getUserParcel(){
-    
-       
-  
-    }
 
      React.useEffect(() => {
         getUser();
@@ -260,49 +260,26 @@ export default function ViewParcel(){
           },
           columns: {
             columnVisibilityModel: {
-             
+              screenshot: false,
+              receipt: false
             },
           },
         }}
         pageSizeOptions={[5, 10]}
         getRowId={(row) =>  row.count}
       />
-       </div>
+       </div> 
 
-       <Modal
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="modal-modal-title"
-            aria-describedby="modal-modal-description"
-          >
+       {isViewerOpen && (
+        <ImageViewer
+          src={ itemData }
+          currentIndex={0}
+          disableScroll={ true }
+          closeOnClickOutside={ true }
+          onClose={ closeImageViewer }
+        />
+      )}
 
-          <Box sx={style}>
-      <DataGrid
-        // autoHeight
-        disableColumnFilter
-        disableRowSelectionOnClick
-        hideFooter
-        showCellVerticalBorder
-        showColumnVerticalBorder
-        getCellClassName={getCellClassName}
-        columns={columnss}
-        rows={rows}
-        loading={!userData.length}
-        // initialState={{
-        //     pagination: {
-        //       paginationModel: { page: 0, pageSize: 5 },
-        //     },
-        //     columns: {
-        //       columnVisibilityModel: {
-        //        id: false
-        //       },
-        //     },
-        //   }}
-        //  getRowId={(row) =>  row.parcel_count}
-      />
-    </Box>
-
-        </Modal>
 
         </div>
       </div>

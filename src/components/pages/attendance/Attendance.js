@@ -47,12 +47,21 @@ export default function Attendance(){
     const [sheetData, setSheetData] = useState(null);
     const [dateBegin, setDateBegin] = useState(null);
     const [dateEnd, setDateEnd] = useState(null);
+    const [dateFilter, setDateFilter] = useState(null);
     // const [exportSuccess, setExportSucess] = useState();
 
     const [openDialog, setOpenDialog] = React.useState(false);
 
     const handleOpenDialog = () => {
       setOpenDialog(true);
+    };
+
+    const filterParcelDate = () => {
+
+      let selectedDate = new Date(dateFilter.$d).toLocaleString('en-us',{month:'numeric', day:'numeric' ,year:'numeric', timeZone: 'Asia/Manila'});
+  
+      console.log(selectedDate);
+      getUser(selectedDate)
     };
   
     const handleCloseDialog = () => {
@@ -289,9 +298,14 @@ export default function Attendance(){
 
     };
 
-    async function getUser(){
-      await  axios
-        .post('https://rider-monitoring-app-backend.onrender.com/retrieve-user-attendance-today', body)
+    async function getUser(selectDate){
+      const passData = {
+        selectDate: selectDate,
+      };
+
+      await  
+        axios
+        .post('http://192.168.50.139:8082/retrieve-user-attendance-today', passData)
         .then(async response=> {
           const data = await response.data.data;
 
@@ -305,7 +319,7 @@ export default function Attendance(){
                time_out: data.timeOut? data.timeOut: "no record",
                time_in_coordinates: data.timeInCoordinates,
                time_out_coordinates: data.timeOutCoordinates,
-               email: data.user,
+               email: data.email,
                fullname: data.first_name + " " + data.middle_name + " " + data.last_name
               
             };
@@ -344,7 +358,7 @@ export default function Attendance(){
 
       console.log(passData);
       await  axios
-        .post('https://rider-monitoring-app-backend.onrender.com/export-attendance-data', passData)
+        .post('http://192.168.50.139:8082/export-attendance-data', passData)
         .then(async response=> {
           const data = await response.data.data;
 
@@ -355,7 +369,7 @@ export default function Attendance(){
             return {
                count : key + 1,
                fullname: data.first_name + " " + data.last_name,
-               email: data.user,
+               email: data.email,
                date : data.date,
                time_in: data.timeIn,
                time_out: data.timeOut? data.timeOut: "no record",
@@ -518,7 +532,8 @@ export default function Attendance(){
 
     
     React.useEffect(() => {
-        getUser();
+      const dateToday = new Date().toLocaleString('en-us',{month:'numeric', day:'numeric' ,year:'numeric', timeZone: 'Asia/Manila'});
+      getUser(dateToday);
       
     }, []);
 
@@ -533,7 +548,46 @@ export default function Attendance(){
               
         <div style={{ height:'100%',  width : '100%', marginLeft: '100'}}>
         <div style={{margin: 10}}>
-            <Button onClick={handleOpenDialog} variant="contained" endIcon={<FileDownload/>}>Export</Button>
+        <Stack 
+            direction={{ xs: 'column', md: 'row',sm: 'row' }}
+            spacing={{ xs: 1, sm: 2, md: 4 }}>      
+
+            <div class="MuiStack-root">
+
+            <Button
+                onClick={handleOpenDialog}
+                variant="contained"
+                endIcon={<FileDownload />}
+              >
+                Export
+              </Button>
+
+            </div>
+
+            <div class="MuiStack-root">
+
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  label="Select Date"
+                  onChange={(newValue) => setDateFilter(newValue)}
+                  slotProps={{ textField: { size: 'small' } }}
+                ></DatePicker>
+              
+              </LocalizationProvider>
+
+              <Button
+                onClick={filterParcelDate}
+                variant="contained"
+                style={{marginLeft: 5}}
+              >
+                Go
+              </Button>
+
+            </div>
+             
+          
+              
+            </Stack>
         </div>
         
         <DataGrid
