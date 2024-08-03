@@ -215,7 +215,7 @@ export default function Parcel() {
     };
 
     await axios
-      .post("http://192.168.50.139:8082/retrieve-parcel-data", passData)
+      .post("https://rider-monitoring-app-backend.onrender.com/retrieve-parcel-data", passData)
       .then(async (response) => {
         const data = await response.data.data;
 
@@ -311,7 +311,7 @@ export default function Parcel() {
     };
 
     await axios
-      .post("http://192.168.50.139:8082/export-parcel-data", passData)
+      .post("https://rider-monitoring-app-backend.onrender.com/export-parcel-data", passData)
       .then(async (response) => {
         const data = await response.data.data;
 

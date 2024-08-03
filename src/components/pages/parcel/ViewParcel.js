@@ -130,7 +130,7 @@ export default function ViewParcel(){
         const body = {user: userEmail };
 
         await  axios
-          .post('http://192.168.50.139:8082/retrieve-user-parcel-data', body)
+          .post('https://rider-monitoring-app-backend.onrender.com/retrieve-user-parcel-data', body)
           .then(async response=> {
             const data = await response.data.data;
 
