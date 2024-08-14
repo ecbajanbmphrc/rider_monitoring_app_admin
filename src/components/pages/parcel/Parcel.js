@@ -17,11 +17,10 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-import { ConstructionOutlined, FileDownload } from "@mui/icons-material";
+import { ConstructionOutlined, FileDownload, InsertPhoto, ReceiptLong } from "@mui/icons-material";
 import Topbar from "../../topbar/Topbar";
 import Sidebar from "../../sidebar/Sidebar";
 import ImageViewer from 'react-simple-image-viewer';
-import { render } from 'react-dom';
 
 const style = {
   // position: 'absolute',
@@ -105,24 +104,36 @@ export default function Parcel() {
       width: 250,
     },
     {
-      field: "bulk",
-      headerName: "Bulk",
+      field: "assigned_non_bulk",
+      headerName: "Assigned NB",
       width: 200,
     },
     {
-      field: "non_bulk",
-      headerName: "Non-Bulk",
+      field: "assigned_bulk",
+      headerName: "Assigned B",
       width: 200,
     },
     {
-      field: "total_parcel",
-      headerName: "Total",
+      field: "total_assigned",
+      headerName: "Total Assigned",
       width: 200,
       type: buttonBaseClasses,
     },
     {
-      field: "total_assigned",
-      headerName: "Assigned Parcel",
+      field: "delivered_non_bulk",
+      headerName: "Delivered NB",
+      width: 200,
+      type: buttonBaseClasses,
+    },
+    {
+      field: "delivered_bulk",
+      headerName: "Delivered B",
+      width: 200,
+      type: buttonBaseClasses,
+    },
+    {
+      field: "total_delivered_parcel",
+      headerName: "Total Delivered",
       width: 200,
       type: buttonBaseClasses,
     },
@@ -146,31 +157,52 @@ export default function Parcel() {
       disableClickEventBubbling: true,
 
       renderCell: (params) => {
-        const onClick = (e) => {
-          const currentRow = params.row;
+        const currentRow = params.row;
+        const check = params.row.receipt;
+        const viewReceipt = (e) => {
+          
           const imgArr = currentRow.receipt
-          imgArr.push(currentRow.screenshot)
           
           handleOpen(imgArr);
     
         };
 
-        const check = params.row.receipt;
+        const viewScreenshot = (e) => {
+          const imgArr = [currentRow.screenshot]
+          console.log(imgArr)
+
+          handleOpen(imgArr);
+        };
+
+      
         return (
       
           <>
           {check !== "no record" ? (
-            <Stack style={{ marginTop: 10 }}>
+            <Stack style={{ marginTop: 10 }}
+             direction="row"
+             spacing={1}>
               <Button
                 variant="contained"
                 color="warning"
                 size="small"
                 onClick={() => {
-                  onClick();
+                  viewReceipt();
                 }}
               >
-                View
+                <ReceiptLong/>
               </Button>
+              <Button
+                variant="contained"
+                color="warning"
+                size="small"
+                onClick={() => {
+                  viewScreenshot();
+                }}
+              >
+                <InsertPhoto/>
+              </Button>
+
             </Stack>
           ) : (
             <Stack style={{ marginBottom: 100 }}>no record</Stack>
@@ -215,20 +247,24 @@ export default function Parcel() {
     };
 
     await axios
-      .post("https://rider-monitoring-app-backend.onrender.com/retrieve-parcel-data", passData)
+      .post("http://192.168.50.139:8082/retrieve-parcel-data", passData)
       .then(async (response) => {
         const data = await response.data.data;
+
+        console.log("parcel sample", data)
 
         const newData = data.map((data, key) => {
           return {
             count: key + 1,
-            bulk: data.count_bulk,
-            non_bulk: data.count_non_bulk,
-            total_parcel: data.count_total_parcel,
+            assigned_bulk: data.assigned_parcel_bulk_count,
+            assigned_non_bulk: data.assigned_parcel_non_bulk_count,
+            total_assigned: data.assigned_parcel_total,
+            delivered_non_bulk: data.delivered_parcel_non_bulk_count ,
+            delivered_bulk: data.delivered_parcel_bulk_count,
+            total_delivered_parcel: data.delivered_parcel_total,
             email: data.email,
             fullname:
               data.first_name + " " + data.middle_name + " " + data.last_name,
-            total_assigned: data.assigned_parcel_count,
             receipt : data.receipt,
             screenshot : data.screenshot
           };
@@ -311,7 +347,7 @@ export default function Parcel() {
     };
 
     await axios
-      .post("https://rider-monitoring-app-backend.onrender.com/export-parcel-data", passData)
+      .post("http://192.168.50.139:8082/export-parcel-data", passData)
       .then(async (response) => {
         const data = await response.data.data;
 
@@ -546,6 +582,18 @@ export default function Parcel() {
       <div className="container">
         <Sidebar />
 
+        {isViewerOpen && (
+          <div className="img-viewer">
+        <ImageViewer
+          src={ itemData }
+          currentIndex={0}
+          disableScroll={ true }
+          closeOnClickOutside={ true }
+          onClose={ closeImageViewer }
+        />
+        </div>
+      )}
+
         <div style={{ height: "100%", width: "100%", marginLeft: "100" }}>
           <div style={{ margin: 10 }}>
             <Stack 
@@ -623,15 +671,7 @@ export default function Parcel() {
           />
         </div>
 
-        {isViewerOpen && (
-        <ImageViewer
-          src={ itemData }
-          currentIndex={0}
-          disableScroll={ true }
-          closeOnClickOutside={ true }
-          onClose={ closeImageViewer }
-        />
-      )}
+       
 
         {/* <Modal
           open={openPhoto}

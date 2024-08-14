@@ -15,6 +15,7 @@ import { Marker, Popup } from "react-leaflet"
 import Topbar from "../../topbar/Topbar";
 import Sidebar from "../../sidebar/Sidebar";
 import ImageViewer from 'react-simple-image-viewer';
+import { ConstructionOutlined, FileDownload, InsertPhoto, ReceiptLong } from "@mui/icons-material";
 
   
 
@@ -64,10 +65,40 @@ export default function ViewParcel(){
   const columns = [
     { field: 'count', headerName: '#', width: 150 },
     { field: 'date', headerName: 'Date', width: 225 },
-    { field: 'bulk', headerName: 'Bulk', width: 225},
-    { field: 'non_bulk', headerName: 'Non Bulk', width: 225},
-    { field: 'total', headerName: 'Total', width: 200},
-    { field: 'assigned_parcel', headerName: 'Assigned Parcel', width: 200},
+    {
+      field: "assigned_non_bulk",
+      headerName: "Assigned NB",
+      width: 200,
+    },
+    {
+      field: "assigned_bulk",
+      headerName: "Assigned B",
+      width: 200,
+    },
+    {
+      field: "total_assigned",
+      headerName: "Total Assigned",
+      width: 200,
+   
+    },
+    {
+      field: "delivered_non_bulk",
+      headerName: "Delivered NB",
+      width: 200,
+
+    },
+    {
+      field: "delivered_bulk",
+      headerName: "Delivered B",
+      width: 200,
+
+    },
+    {
+      field: "total_delivered_parcel",
+      headerName: "Total Delivered",
+      width: 200,
+ 
+    },
     {
       field: "receipt",
       headerName: "Image",
@@ -87,31 +118,52 @@ export default function ViewParcel(){
       disableClickEventBubbling: true,
 
       renderCell: (params) => {
-        const onClick = (e) => {
-          const currentRow = params.row;
+        const currentRow = params.row;
+        const check = params.row.receipt;
+        const viewReceipt = (e) => {
+          
           const imgArr = currentRow.receipt
-          imgArr.push(currentRow.screenshot)
           
           handleOpen(imgArr);
     
         };
 
-        const check = params.row.receipt;
+        const viewScreenshot = (e) => {
+          const imgArr = [currentRow.screenshot]
+          console.log(imgArr)
+
+          handleOpen(imgArr);
+        };
+
+      
         return (
       
           <>
           {check !== "no record" ? (
-            <Stack style={{ marginTop: 10 }}>
+            <Stack style={{ marginTop: 10 }}
+             direction="row"
+             spacing={1}>
               <Button
                 variant="contained"
                 color="warning"
                 size="small"
                 onClick={() => {
-                  onClick();
+                  viewReceipt();
                 }}
               >
-                View
+                <ReceiptLong/>
               </Button>
+              <Button
+                variant="contained"
+                color="warning"
+                size="small"
+                onClick={() => {
+                  viewScreenshot();
+                }}
+              >
+                <InsertPhoto/>
+              </Button>
+
             </Stack>
           ) : (
             <Stack style={{ marginBottom: 100 }}>no record</Stack>
@@ -130,7 +182,7 @@ export default function ViewParcel(){
         const body = {user: userEmail };
 
         await  axios
-          .post('https://rider-monitoring-app-backend.onrender.com/retrieve-user-parcel-data', body)
+          .post('http://192.168.50.139:8082/retrieve-user-parcel-data', body)
           .then(async response=> {
             const data = await response.data.data;
 

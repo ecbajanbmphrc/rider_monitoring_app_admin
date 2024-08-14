@@ -152,7 +152,7 @@ export default function ViewAttendance() {
     console.log(userEmail, "test email");
 
     await axios
-      .post("https://rider-monitoring-app-backend.onrender.com/view-user-attendance", body)
+      .post("http://192.168.50.139:8082/view-user-attendance", body)
       .then(async (response) => {
         const data = await response.data.data;
         console.log(data);

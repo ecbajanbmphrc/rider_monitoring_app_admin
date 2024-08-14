@@ -5,3 +5,6 @@
 .leaflet-container {
     height: 100%;
 }
+.img-viewer {
+    z-index: 20000 !important;
+  }
