@@ -10,12 +10,16 @@ import { MapContainer } from 'react-leaflet/MapContainer'
 import { TileLayer } from 'react-leaflet/TileLayer'
 import 'leaflet/dist/leaflet.css'
 import markerIconPng from "leaflet/dist/images/marker-icon.png"
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import {Icon} from 'leaflet'
 import { Marker, Popup } from "react-leaflet"
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import Topbar from "../../topbar/Topbar";
 import Sidebar from "../../sidebar/Sidebar";
 import ImageViewer from 'react-simple-image-viewer';
 import { ConstructionOutlined, FileDownload, InsertPhoto, ReceiptLong } from "@mui/icons-material";
+import Swal from "sweetalert2";
 
   
 
@@ -32,6 +36,8 @@ export default function ViewParcel(){
   const [parcelDate, setParcelDate] = React.useState('');
   const [isViewerOpen, setIsViewerOpen] = React.useState(false);
   const [itemData, setItemData] = React.useState([]);
+  const [startDate, setStartDate] = React.useState(null);
+  const [endDate, setEndDate] = React.useState(null);
 
 
   const handleOpen = (imgArr) => {
@@ -179,24 +185,26 @@ export default function ViewParcel(){
     
    
     async function getUser(){
-        const body = {user: userEmail };
+        const body = {user: userEmail};
 
         await  axios
-          .post('http://192.168.50.139:8082/retrieve-user-parcel-data', body)
+          .post('https://rider-monitoring-app-backend.onrender.com/retrieve-user-parcel-data', body)
           .then(async response=> {
             const data = await response.data.data;
 
-            console.log(data)
+            console.log("testest dd", data)
   
             const newData = data.map((data, key) => {
               return {
                  count : key + 1,
                  date : data.date,
-                 bulk: data.count_bulk,
-                 non_bulk : data.count_non_bulk,
-                 assigned_parcel: data.assigned_parcel_count,
-                 total: data.count_total_parcel,
-                 receipt : data.receipt? data.receipt : "no record",
+                 assigned_bulk: data.assigned_parcel_bulk_count,
+                 assigned_non_bulk: data.assigned_parcel_non_bulk_count,
+                 total_assigned: data.assigned_parcel_total,
+                 delivered_non_bulk: data.delivered_parcel_non_bulk_count ,
+                 delivered_bulk: data.delivered_parcel_bulk_count,
+                 total_delivered_parcel: data.delivered_parcel_total,
+                 receipt : data.receipt,
                  screenshot : data.screenshot
              
               };
@@ -210,15 +218,96 @@ export default function ViewParcel(){
     }
 
 
-     React.useEffect(() => {
-        getUser();
+    async function getUserFiltered(begin,end){
+      const body = {user: userEmail, begin , end };
+
+      await  axios
+        .post('https://rider-monitoring-app-backend.onrender.com/retrieve-user-parcel-data', body)
+        .then(async response=> {
+          const data = await response.data.data;
+
+          console.log("testest dd", data)
+
+          const newData = data.map((data, key) => {
+            return {
+               count : key + 1,
+               date : data.date,
+               assigned_bulk: data.assigned_parcel_bulk_count,
+               assigned_non_bulk: data.assigned_parcel_non_bulk_count,
+               total_assigned: data.assigned_parcel_total,
+               delivered_non_bulk: data.delivered_parcel_non_bulk_count ,
+               delivered_bulk: data.delivered_parcel_bulk_count,
+               total_delivered_parcel: data.delivered_parcel_total,
+               receipt : data.receipt,
+               screenshot : data.screenshot
+           
+            };
+           }
+          );
+          console.log(newData, "testing get data");
+          setUserData(newData);
+
+        });
+
+  }
+
+
+    React.useEffect(() => {
+      getUser();
     }, []);
 
-    const items = [
-        { id: 1, item: 'Paperclip', quantity: 100},
-        { id: 2, item: 'Paper', quantity: 100},
-        { id: 3, item: 'Pencil', quantity: 100 },
-      ];
+    function alertDialog (message){
+      Swal.fire({
+        title: "Error!",
+        text: message,
+        icon: "error"
+      });
+    }
+
+
+    async function filterParcelDate(){
+
+      const begin = startDate.$d.getTime();
+      const end = (endDate.$d.getTime())  + 86400000;
+      const err = "End date must be ahead or same day of start date"
+      const checkDate = end - begin;
+
+      console.log(begin, end)
+
+      if(checkDate <= 0) return alertDialog(err)
+
+      const body = {user: userEmail, begin: begin , end: end };
+
+      await  axios
+        .post('https://rider-monitoring-app-backend.onrender.com/retrieve-user-parcel-data-filtered-date', body)
+        .then(async response=> {
+          const data = await response.data.data;
+
+          console.log("testest dd", data)
+
+          const newData = data.map((data, key) => {
+            return {
+               count : key + 1,
+               date : data.date,
+               assigned_bulk: data.assigned_parcel_bulk_count,
+               assigned_non_bulk: data.assigned_parcel_non_bulk_count,
+               total_assigned: data.assigned_parcel_total,
+               delivered_non_bulk: data.delivered_parcel_non_bulk_count ,
+               delivered_bulk: data.delivered_parcel_bulk_count,
+               total_delivered_parcel: data.delivered_parcel_total,
+               receipt : data.receipt,
+               screenshot : data.screenshot
+           
+            };
+           }
+          );
+          console.log(newData, "testing get data");
+          setUserData(newData);
+
+        });
+
+    }
+
       
       const rows = [
         ...parcelItem,
@@ -234,7 +323,7 @@ export default function ViewParcel(){
       };
       
       const columnss = [
-     
+        
         {
           field: 'id',
           headerName: 'Parcel Input',
@@ -300,9 +389,61 @@ export default function ViewParcel(){
         <div className="parcel">
           <Topbar/>
          <div className="container">
-          <Sidebar/>  
-          <div style={{ height: 400, width: '100%' }}>
-      <DataGrid
+          <Sidebar/> 
+          {isViewerOpen && (
+        <div className="img-viewer">
+        <ImageViewer
+          src={ itemData }
+          currentIndex={0}
+          disableScroll={ true }
+          closeOnClickOutside={ true }
+          onClose={ closeImageViewer }
+        />
+        </div>
+      )} 
+        <div style={{ height: "100%", width: "80%", marginLeft: "100" }}>     
+        <div style={{ margin: 10 }}> 
+
+        <Stack style={{ marginTop: 10 }}
+             direction="row"
+             spacing={1}>
+        <div class="MuiStack-root">
+         
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  label="From"
+                  onChange={(newValue) => setStartDate(newValue)}
+                  slotProps={{ textField: { size: 'small' } }}
+                ></DatePicker>
+              
+        </LocalizationProvider>
+        </div>
+
+      <div class="MuiStack-root">
+
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  label="End"
+                  onChange={(newValue) => setEndDate(newValue)}
+                  slotProps={{ textField: { size: 'small' } }}
+                ></DatePicker>
+              
+        </LocalizationProvider>
+
+        </div>
+        <div class ="MuiStack-root">
+        <Button
+                onClick={filterParcelDate}
+                variant="contained"
+                style={{marginLeft: 5}}
+              >
+                Go
+              </Button>
+        </div>
+        </Stack>
+        </div>
+
+        <DataGrid
         rows={userData}
         columns={columns}
        
@@ -320,21 +461,18 @@ export default function ViewParcel(){
         pageSizeOptions={[5, 10]}
         getRowId={(row) =>  row.count}
       />
-       </div> 
 
-       {isViewerOpen && (
-        <ImageViewer
-          src={ itemData }
-          currentIndex={0}
-          disableScroll={ true }
-          closeOnClickOutside={ true }
-          onClose={ closeImageViewer }
-        />
-      )}
 
 
         </div>
-      </div>
+      
+       </div> 
+
+    
+
+
+        </div>
+      // </div>
     )
 }
 
