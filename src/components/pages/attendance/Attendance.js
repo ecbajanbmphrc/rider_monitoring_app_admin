@@ -76,7 +76,7 @@ export default function Attendance(){
       {
         field: 'email',
         headerName: 'Email',
-        width: 250,
+        width: 250,filterParcelDate
       },
       {
         field: 'fullname',
