@@ -3,6 +3,7 @@ import React, {useEffect, useState} from "react";
 import { DataGrid, GridToolbar} from '@mui/x-data-grid';
 import axios from "axios";
 import { FileDownload} from "@mui/icons-material";
+import RoomIcon from '@mui/icons-material/Room';
 import { Button, Stack } from "@mui/material";
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
@@ -25,6 +26,8 @@ import Alert from '@mui/material/Alert';
 import Swal from "sweetalert2";
 import Topbar from "../../topbar/Topbar";
 import Sidebar from "../../sidebar/Sidebar";
+import DescriptionIcon from '@mui/icons-material/Description';
+import ImageViewer from 'react-simple-image-viewer';
 
     
   
@@ -48,12 +51,25 @@ export default function Attendance(){
     const [dateBegin, setDateBegin] = useState(null);
     const [dateEnd, setDateEnd] = useState(null);
     const [dateFilter, setDateFilter] = useState(null);
-    // const [exportSuccess, setExportSucess] = useState();
+    const [isProofViewerOpen, setIsProofViewerOpen] = useState(false);
+    const [proofItemData, setProofItemData] = useState([]);
 
     const [openDialog, setOpenDialog] = React.useState(false);
 
     const handleOpenDialog = () => {
       setOpenDialog(true);
+    };
+
+    const handleOpenProof = (imgArr) => {
+    
+
+      setProofItemData(imgArr)
+      setIsProofViewerOpen(true)
+  
+    }
+
+    const closeImageViewer = () => {
+      setIsProofViewerOpen(false);
     };
 
     const filterParcelDate = () => {
@@ -83,10 +99,10 @@ export default function Attendance(){
         headerName: 'Fullname',
         width: 250,
       },
-      { field: 'time_in', headerName: 'Time In', width: 175},
+      { field: 'time_in', headerName: 'Time In', width: 110},
       { field: 'time_in_loc', 
-      headerName: 'Time In Location', 
-      width: 175,
+      headerName: '', 
+      width: 120,
       sortable: false,
       disableClickEventBubbling: true,
       
@@ -116,13 +132,15 @@ export default function Attendance(){
             <>
            {check === "no record" ? 
 
-           "no record"
+            <Stack style={{marginBottom:100,alignItems:'center'}}>
+-
+            </Stack>
 
            :
 
-            <Stack style={{marginTop:10}}>
+            <Stack style={{marginTop:10, alignItems:'center'}}>
             
-              <Button variant="contained" color="warning" size="small" onClick={() => {onClick();  }}>View</Button>
+              <Button variant="contained" color="warning" size="small" onClick={() => {onClick();  }}><RoomIcon></RoomIcon></Button>
           
             </Stack>
           
@@ -134,11 +152,12 @@ export default function Attendance(){
       },
       { field: 'time_in_coordinates', headerName: 'Time In Location', width: 175 },
       { field: 'time_out_coordinates', headerName: 'Time out Location', width: 175 },
-      { field: 'time_out', headerName: 'Time Out', width: 175 },
+      { field: 'proof', headerName: 'Proof', width: 175 },
+      { field: 'time_out', headerName: 'Time Out', width: 110 },
       {
         field: 'time_out_loc',
-        headerName: 'Time out Location',
-        width: 175  ,
+        headerName: '',
+        width: 120  ,
         sortable: false,
         disableClickEventBubbling: true,
       
@@ -168,19 +187,63 @@ export default function Attendance(){
             <>
             {check !== "no record" ? 
 
-            <Stack style={{marginTop:10}}>
+            <Stack style={{marginTop:10, alignItems:'center'}}>
             
-              <Button variant="contained" color="warning" size="small" onClick={() => {onClick() }}>View</Button>
+              <Button variant="contained" color="warning" size="small" onClick={() => {onClick() }}><RoomIcon></RoomIcon></Button>
           
            </Stack>
            :
-           <Stack style={{marginBottom:100}}>
-            no record
+           <Stack style={{marginBottom:100,alignItems:'center'}}>
+            -
            </Stack>
 
             }
           </>
           );
+      },
+    },
+    {
+      field: "proof_img",
+      headerName: "Proof",
+      width: 120,
+      sortable: false,
+      disableClickEventBubbling: true,
+
+      renderCell: (params) => {
+        console.log('test11111')
+        const currentRow = params.row;
+        const check = params.row.proof;
+       
+        const viewProofImg = (e) => {
+          const imgArr = [currentRow.proof]
+
+          handleOpenProof(imgArr);
+        };
+
+      
+        return (
+      
+          <>
+          {check !== "no record" ? (
+            <Stack style={{ marginTop: 10, alignItems: 'center' }}
+             direction="row"
+             spacing={1}>
+              <Button
+                variant="contained"
+                color="warning"
+                size="small"
+                onClick={() => {
+                  viewProofImg();
+                }}
+              >
+                <DescriptionIcon/>
+              </Button>
+            </Stack>
+          ) : (
+            <Stack style={{ marginBottom: 100, alignItems: 'center' }}>-</Stack>
+          )}
+        </>
+        );
       },
     },
     {
@@ -211,15 +274,11 @@ export default function Attendance(){
       }
     },
 
+
     ];
 
     function alertDialog (exportSuccess, message){
 
-      // Swal.fire({
-      //   title: "Good job!",
-      //   text: "You clicked the button!",
-      //   icon: "success"
-      // });
 
       
       const ExportSuccess = Swal.mixin({
@@ -277,7 +336,7 @@ export default function Attendance(){
     async function handleOnExport() {
 
 
-      // let bDate = dateBegin.$d.toLocaleString('en-us', {month: 'numeric', day: 'numeric', year:'numeric'});
+
 
       const bDate = dateBegin.$d;
 
@@ -286,15 +345,7 @@ export default function Attendance(){
 
       const newBDate = bDate.getTime();
 
-      // var wb = XLSX.utils.book_new(),
-      // ws = XLSX.utils.json_to_sheet(sheetData);
 
-      // XLSX.utils.book_append_sheet(wb, ws, "MySheet1");
-
-      // XLSX.writeFile(wb, "MyExcel.xlsx");
-
-      console.log(bDate, "test date");
-      console.log(eDate, "test date");
 
     };
 
@@ -319,13 +370,14 @@ export default function Attendance(){
                time_out: data.timeOut? data.timeOut: "no record",
                time_in_coordinates: data.timeInCoordinates,
                time_out_coordinates: data.timeOutCoordinates,
+               proof: data.proof,
                email: data.email,
                fullname: data.first_name + " " + data.middle_name + " " + data.last_name
               
             };
            }
           );
-          console.log(newData, "testing par");
+          // console.log(newData, "testing par");
           setUserData(newData);
 
 
@@ -371,6 +423,7 @@ export default function Attendance(){
                fullname: data.first_name + " " + data.last_name,
                email: data.email,
                date : data.date,
+               proof : data.assigned_parcel_screenshot,
                time_in: data.timeIn,
                time_out: data.timeOut? data.timeOut: "no record",
               
@@ -544,6 +597,18 @@ export default function Attendance(){
           <Topbar/>
           <div className="container">
           <Sidebar/>
+
+          {isProofViewerOpen && (
+          <div className="img-viewer">
+        <ImageViewer
+          src={ proofItemData }
+          currentIndex={0}
+          disableScroll={ true }
+          closeOnClickOutside={ true }
+          onClose={ closeImageViewer }
+        />
+        </div>
+      )}
           
               
         <div style={{ height:'100%',  width : '100%', marginLeft: '100'}}>
@@ -601,7 +666,8 @@ export default function Attendance(){
               columnVisibilityModel: {
                 time_in_coordinates: false,
                 time_out_coordinates: false,
-                email:false
+                email:false,
+                proof:false
                
               },
             },
