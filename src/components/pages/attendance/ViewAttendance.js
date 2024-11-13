@@ -1,5 +1,5 @@
 import "./attendance.css";
-import * as React from "react";
+import  React, {useEffect, useState}  from "react";
 import { useLocation } from "react-router-dom";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
@@ -16,6 +16,9 @@ import { Icon } from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 import Topbar from "../../topbar/Topbar";
 import Sidebar from "../../sidebar/Sidebar";
+import RoomIcon from '@mui/icons-material/Room';
+import DescriptionIcon from '@mui/icons-material/Description';
+import ImageViewer from 'react-simple-image-viewer';
 
 export default function ViewAttendance() {
   const [userData, setUserData] = React.useState([]);
@@ -27,17 +30,31 @@ export default function ViewAttendance() {
   const [longitude, setLongitude] = React.useState();
   const [city, setCity] = React.useState();
   const [street, setStreet] = React.useState();
+  const [isProofViewerOpen, setIsProofViewerOpen] = useState(false);
+  const [proofItemData, setProofItemData] = useState([]);
+
+  const handleOpenProof = (imgArr) => {
+    
+
+    setProofItemData(imgArr)
+    setIsProofViewerOpen(true)
+
+  }
+
+  const closeImageViewer = () => {
+    setIsProofViewerOpen(false);
+  };
 
   const userEmail = location.state.state;
 
   const columns = [
     { field: "count", headerName: "#", width: 75, type: "number" },
     { field: "date", headerName: "Date", width: 225 },
-    { field: "time_in", headerName: "Time In", width: 225 },
+    { field: "time_in", headerName: "Time In", width: 110 },
     {
       field: "time_in_loc",
-      headerName: "Time In Location",
-      width: 150,
+      headerName: "",
+      width: 110,
       sortable: false,
       disableClickEventBubbling: true,
 
@@ -64,7 +81,7 @@ export default function ViewAttendance() {
 
         return (
           <>
-            <Stack style={{ marginTop: 10 }}>
+            <Stack style={{ marginTop: 10,alignItems:'center' }}>
               <Button
                 variant="contained"
                 color="warning"
@@ -73,13 +90,14 @@ export default function ViewAttendance() {
                   onClick();
                 }}
               >
-                View
+                 <RoomIcon/>
               </Button>
             </Stack>
           </>
         );
       },
     },
+    { field: 'proof', headerName: 'Proof', width: 175 },
     {
       field: "time_in_coordinates",
       headerName: "Time In Location",
@@ -90,10 +108,10 @@ export default function ViewAttendance() {
       headerName: "Time out Location",
       width: 225,
     },
-    { field: "time_out", headerName: "Time Out", width: 225 },
+    { field: "time_out", headerName: "Time Out", width: 110 },
     {
       field: "time_out_loc",
-      headerName: "Time out Location",
+      headerName: "",
       width: 150,
       sortable: false,
       disableClickEventBubbling: true,
@@ -122,7 +140,7 @@ export default function ViewAttendance() {
         return (
           <>
             {check !== "no record" ? (
-              <Stack style={{ marginTop: 10 }}>
+              <Stack style={{ marginTop: 10, alignItems: 'center' }}>
                 <Button
                   variant="contained"
                   color="warning"
@@ -131,13 +149,57 @@ export default function ViewAttendance() {
                     onClick();
                   }}
                 >
-                  View
+                <RoomIcon/>
                 </Button>
               </Stack>
             ) : (
-              <Stack style={{ marginBottom: 100 }}>no record</Stack>
+              <Stack style={{ marginBottom: 100,alignItems: 'center' }}>-</Stack>
             )}
           </>
+        );
+      },
+    },
+    {
+      field: "proof_img",
+      headerName: "Proof",
+      width: 120,
+      sortable: false,
+      disableClickEventBubbling: true,
+
+      renderCell: (params) => {
+       
+        const currentRow = params.row;
+        const check = params.row.proof;
+       
+        const viewProofImg = (e) => {
+          const imgArr = [currentRow.proof]
+
+          handleOpenProof(imgArr);
+        };
+
+      
+        return (
+      
+          <>
+          {check !== "no record" ? (
+            <Stack style={{ marginTop: 10, alignItems: 'center' }}
+             direction="row"
+             spacing={1}>
+              <Button
+                variant="contained"
+                color="warning"
+                size="small"
+                onClick={() => {
+                  viewProofImg();
+                }}
+              >
+                <DescriptionIcon/>
+              </Button>
+            </Stack>
+          ) : (
+            <Stack style={{ marginBottom: 100, alignItems: 'center' }}>-</Stack>
+          )}
+        </>
         );
       },
     },
@@ -168,6 +230,7 @@ export default function ViewAttendance() {
             time_out_loc: data.time_out_coordinates.latitude
               ? data.time_out_coordinates.latitude
               : "no record",
+            proof: data.assigned_parcel_screenshot? data.assigned_parcel_screenshot : "no record",
             action: data.time_out ? data.time_out : "no record",
           };
         });
@@ -185,6 +248,17 @@ export default function ViewAttendance() {
       <Topbar />
       <div className="container">
         <Sidebar />
+        {isProofViewerOpen && (
+          <div className="img-viewer">
+        <ImageViewer
+          src={ proofItemData }
+          currentIndex={0}
+          disableScroll={ true }
+          closeOnClickOutside={ true }
+          onClose={ closeImageViewer }
+        />
+        </div>
+      )}
         <div style={{ height: 400, width: "100%" }}>
           <DataGrid
             rows={userData}
@@ -195,9 +269,10 @@ export default function ViewAttendance() {
               },
               columns: {
                 columnVisibilityModel: {
-                  // Hide columns status and traderName, the other columns will remain visible
+              
                   time_in_coordinates: false,
                   time_out_coordinates: false,
+                  proof:false
                 },
               },
             }}
