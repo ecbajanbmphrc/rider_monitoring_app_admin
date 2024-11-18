@@ -169,7 +169,6 @@ export default function Parcel() {
 
         const viewScreenshot = (e) => {
           const imgArr = [currentRow.screenshot]
-          console.log(imgArr)
 
           handleOpen(imgArr);
         };
