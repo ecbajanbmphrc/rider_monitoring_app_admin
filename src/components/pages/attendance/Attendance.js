@@ -2,7 +2,7 @@ import "./attendance.css"
 import React, {useEffect, useState} from "react";
 import { DataGrid, GridToolbar} from '@mui/x-data-grid';
 import axios from "axios";
-import { FileDownload} from "@mui/icons-material";
+import { FileDownload,  ReceiptLong} from "@mui/icons-material";
 import RoomIcon from '@mui/icons-material/Room';
 import { Button, Stack } from "@mui/material";
 import Typography from '@mui/material/Typography';
@@ -52,7 +52,9 @@ export default function Attendance(){
     const [dateEnd, setDateEnd] = useState(null);
     const [dateFilter, setDateFilter] = useState(null);
     const [isProofViewerOpen, setIsProofViewerOpen] = useState(false);
+    const [isReceiptProofViewerOpen, setIsReceiptProofViewerOpen] = useState(false);
     const [proofItemData, setProofItemData] = useState([]);
+    const [proofItemReceiptData, setProofItemReceiptData] = useState([]);
 
     const [openDialog, setOpenDialog] = React.useState(false);
 
@@ -61,15 +63,30 @@ export default function Attendance(){
     };
 
     const handleOpenProof = (imgArr) => {
-    
-
+      
       setProofItemData(imgArr)
       setIsProofViewerOpen(true)
+      console.log("proof", isProofViewerOpen)
+  
+    }
+
+    const handleOpenReceiptProof = (imgArr) => {
+    
+      setProofItemReceiptData(imgArr)
+      setIsReceiptProofViewerOpen(true)
   
     }
 
     const closeImageViewer = () => {
       setIsProofViewerOpen(false);
+
+      
+    };
+
+    const closeImageProofViewer = () => {
+    
+      setIsReceiptProofViewerOpen(false)
+      
     };
 
     const filterParcelDate = () => {
@@ -133,7 +150,7 @@ export default function Attendance(){
            {check === "no record" ? 
 
             <Stack style={{marginBottom:100,alignItems:'center'}}>
--
+                    -
             </Stack>
 
            :
@@ -151,9 +168,104 @@ export default function Attendance(){
         }
       },
       { field: 'time_in_coordinates', headerName: 'Time In Location', width: 175 },
+      {
+        field: "proof_img",
+        headerName: "Proof",
+        width: 120,
+        sortable: false,
+        disableClickEventBubbling: true,
+  
+        renderCell: (params) => {
+ 
+          const currentRow = params.row;
+          const check = params.row.proof;
+         
+          const viewProofImg = (e) => {
+            const imgArr = [currentRow.proof]
+            
+            handleOpenProof(imgArr);
+          };
+  
+        
+          return (
+        
+            <>
+            {check !== "no record" ? (
+              <Stack style={{ marginTop: 10, alignItems: 'center' }}
+               direction="row"
+               spacing={1}>
+                <Button
+                  variant="contained"
+                  color="warning"
+                  size="small"
+                  onClick={() => {
+                    viewProofImg();
+                  }}
+                >
+                  <DescriptionIcon/>
+                </Button>
+              </Stack>
+            ) : (
+              <Stack style={{ marginBottom: 100, alignItems: 'center' }}>-</Stack>
+            )}
+          </>
+          );
+        },
+      },  
       { field: 'time_out_coordinates', headerName: 'Time out Location', width: 175 },
       { field: 'proof', headerName: 'Proof', width: 175 },
       { field: 'time_out', headerName: 'Time Out', width: 110 },
+      {
+        field: "receipt",
+        headerName: "Image",
+        width: 200,
+      },
+      {
+        field: "img",
+        headerName: "Proof",
+        width: 180,
+        sortable: false,
+        disableClickEventBubbling: true,
+  
+        renderCell: (params) => {
+          const currentRow = params.row;
+          const check = params.row.receipt;
+          const viewReceipt = (e) => {
+            
+            const imgArr = currentRow.receipt            
+            handleOpenReceiptProof(imgArr);
+
+      
+          };
+  
+        
+          return (
+        
+            <>
+            {check !== "no record" ? (
+              <Stack style={{ marginTop: 10 }}
+               direction="row"
+               spacing={1}>
+                <Button
+                  variant="contained"
+                  color="warning"
+                  size="small"
+                  onClick={() => {
+                    viewReceipt();
+                  }}
+                >
+                  <ReceiptLong/>
+                </Button>
+          
+  
+              </Stack>
+            ) : (
+              <Stack style={{ marginBottom: 100 }}>no record</Stack>
+            )}
+          </>
+          );
+        },
+      },
       {
         field: 'time_out_loc',
         headerName: '',
@@ -202,50 +314,7 @@ export default function Attendance(){
           );
       },
     },
-    {
-      field: "proof_img",
-      headerName: "Proof",
-      width: 120,
-      sortable: false,
-      disableClickEventBubbling: true,
-
-      renderCell: (params) => {
-        console.log('test11111')
-        const currentRow = params.row;
-        const check = params.row.proof;
-       
-        const viewProofImg = (e) => {
-          const imgArr = [currentRow.proof]
-
-          handleOpenProof(imgArr);
-        };
-
-      
-        return (
-      
-          <>
-          {check !== "no record" ? (
-            <Stack style={{ marginTop: 10, alignItems: 'center' }}
-             direction="row"
-             spacing={1}>
-              <Button
-                variant="contained"
-                color="warning"
-                size="small"
-                onClick={() => {
-                  viewProofImg();
-                }}
-              >
-                <DescriptionIcon/>
-              </Button>
-            </Stack>
-          ) : (
-            <Stack style={{ marginBottom: 100, alignItems: 'center' }}>-</Stack>
-          )}
-        </>
-        );
-      },
-    },
+   
     {
       field: 'action',
       headerName: 'History',
@@ -372,12 +441,13 @@ export default function Attendance(){
                time_out_coordinates: data.timeOutCoordinates,
                proof: data.proof,
                email: data.email,
+               receipt: data.parcel,
                fullname: data.first_name + " " + data.middle_name + " " + data.last_name
               
             };
            }
           );
-          // console.log(newData, "testing par");
+       
           setUserData(newData);
 
 
@@ -609,6 +679,18 @@ export default function Attendance(){
         />
         </div>
       )}
+
+      {isReceiptProofViewerOpen && (
+          <div className="img-viewer">
+        <ImageViewer
+          src={ proofItemReceiptData }
+          currentIndex={0}
+          disableScroll={ true }
+          closeOnClickOutside={ true }
+          onClose={ closeImageProofViewer }
+        />
+        </div>
+      )}
           
               
         <div style={{ height:'100%',  width : '100%', marginLeft: '100'}}>
@@ -667,7 +749,10 @@ export default function Attendance(){
                 time_in_coordinates: false,
                 time_out_coordinates: false,
                 email:false,
-                proof:false
+                proof:false,
+                receipt:false,
+                time_in_loc: false,
+                time_out_loc: false
                
               },
             },
