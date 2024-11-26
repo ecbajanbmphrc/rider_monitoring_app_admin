@@ -490,10 +490,9 @@ export default function Attendance(){
             
             return {
                count : key + 1,
-               fullname: data.first_name + " " + data.last_name,
-               email: data.email,
+               fullname: data.last_name + ", " + data.first_name,
+              //  email: data.email,
                date : data.date,
-               proof : data.assigned_parcel_screenshot,
                time_in: data.timeIn,
                time_out: data.timeOut? data.timeOut: "no record",
               
@@ -501,23 +500,23 @@ export default function Attendance(){
             };
            }
           );
-          // console.log(newData, "testing par");
+
           setSheetData(newData);
     
           const wb = XLSX.utils.book_new();
 
           const ws = XLSX.utils.json_to_sheet(newData);
 
-          const max_width = newData.reduce((wb, r) => Math.max(wb, r.email.length), 10);
+          // const max_width = newData.reduce((wb, r) => Math.max(wb, r.email.length), 10);
 
           
 
-          ws["!cols"] = [{wch: 4}, {wch: 30},{wch: 30} , {wch: 10} , {wch: 15} , {wch: 15}];
+          ws["!cols"] = [{wch: 4},{wch: 30} , {wch: 10} , {wch: 15} , {wch: 15}];
 
-          XLSX.utils.sheet_add_aoa(ws, [["#", "Fullname","Email" , "Date", "Time In", "Time Out"]], { origin: "A1" });
+          XLSX.utils.sheet_add_aoa(ws, [["#", "Fullname", "Date", "Time In", "Time Out"]], { origin: "A1" });
           
 
-          ws["A1"].s = { // set the style for target cell
+          ws["A1"].s = {
             font: {
               name: '#',
               sz: 10,
@@ -537,7 +536,7 @@ export default function Attendance(){
               },
             }
           };
-          ws["B1"].s = { // set the style for target cell
+          ws["B1"].s = {
             font: {
               name: '#',
               sz: 10,
@@ -557,7 +556,7 @@ export default function Attendance(){
               },
             }
           };
-          ws["C1"].s = { // set the style for target cell
+          ws["C1"].s = { 
             font: {
               name: '#',
               sz: 10,
@@ -577,7 +576,7 @@ export default function Attendance(){
               },
             }
           };
-          ws["D1"].s = { // set the style for target cell
+          ws["D1"].s = { 
             font: {
               name: '#',
               sz: 10,
@@ -597,7 +596,7 @@ export default function Attendance(){
               },
             }
           };
-          ws["E1"].s = { // set the style for target cell
+          ws["E1"].s = {
             font: {
               name: '#',
               sz: 10,
@@ -617,37 +616,37 @@ export default function Attendance(){
               },
             }
           };
-          ws["F1"].s = { // set the style for target cell
-            font: {
-              name: '#',
-              sz: 10,
-              bold: true,
-              color: {
-                rgb: "FFFFFFF"
-              },
-            },
-            alignment:{
-              vertical : "center",
-              horizontal: "center"
-            },
-            fill: {
-              patternType: "solid",
-              bgColor: {
-                rgb: "FFFFFFF" 
-              },
-            }
-          };
+          // ws["F1"].s = { // set the style for target cell
+          //   font: {
+          //     name: '#',
+          //     sz: 10,
+          //     bold: true,
+          //     color: {
+          //       rgb: "FFFFFFF"
+          //     },
+          //   },
+          //   alignment:{
+          //     vertical : "center",
+          //     horizontal: "center"
+          //   },
+          //   fill: {
+          //     patternType: "solid",
+          //     bgColor: {
+          //       rgb: "FFFFFFF" 
+          //     },
+          //   }
+          // };
          
     
-          XLSX.utils.book_append_sheet(wb, ws, "MySheet1");
+          XLSX.utils.book_append_sheet(wb, ws, "Data");
     
-          XLSX.writeFile(wb, "MyExcel.xlsx");
+          XLSX.writeFile(wb, "Attendance-Data.xlsx");
 
           
         
           alertDialog(true, "Data exported successfully");
         
-          // return
+     
 
         });
 
