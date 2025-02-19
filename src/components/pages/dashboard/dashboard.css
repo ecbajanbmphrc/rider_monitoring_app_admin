@@ -1,0 +1,11 @@
+.dashboard{
+    /* flex: 5; */
+    background-color: aliceblue;
+}
+.leaflet-container {
+    height: 100%;
+    width: 100%;
+}
+.swal2-container {
+    z-index: 20000 !important;
+  }

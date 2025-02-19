@@ -1,6 +1,7 @@
 import "./App.css" 
 import "./defaultApp.css"
 import Attendance from './components/pages/attendance/Attendance';
+import Dashboard from "./components/pages/dashboard/Dashboard";
 import { BrowserRouter as Router, Routes, Route, BrowserRouter } from 'react-router-dom';
 import Parcel from './components/pages/parcel/Parcel';
 import ViewAttendance from './components/pages/attendance/ViewAttendance';
@@ -28,6 +29,7 @@ function App() {
             <Route path='/login' element={<LogIn/>} />
             <Route path='/forgot-password' element= {<ForgotPassword/>} />
             <Route path='/' element={<Attendance/>} />
+            <Route path='/dashboard' element={<Dashboard/>} />
             <Route path='/parcel' element={<Parcel/>} />
             <Route path='/view-parcel' element={<ViewParcel/>}/>
             <Route path='/view-attendance' element={<ViewAttendance/>} />
