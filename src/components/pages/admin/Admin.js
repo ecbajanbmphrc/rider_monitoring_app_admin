@@ -352,7 +352,7 @@ export default function Admin(){
 
     async function getUser(){
       await  axios
-        .post('https://rider-monitoring-app-backend.onrender.com/get-admin-user', requestBody)
+        .post('http://192.168.50.139:8082/get-admin-user', requestBody)
         .then(async response=> {
           const data = await response.data.data;
 
@@ -386,7 +386,7 @@ export default function Admin(){
 
     async function setStatus(){
         await  axios
-          .put('https://rider-monitoring-app-backend.onrender.com/update-status', requestBody)
+          .put('http://192.168.50.139:8082/update-status', requestBody)
           .then(async response=> {
             const data = await response.data.data;
   
@@ -398,7 +398,7 @@ export default function Admin(){
 
     async function sendOtp(){
       await axios
-        .post('https://rider-monitoring-app-backend.onrender.com/send-otp-register', {email : adminEmail})
+        .post('http://192.168.50.139:8082/send-otp-register', {email : adminEmail})
         .then(async response=> {
           const data = await response.data;  
           if(data.status === 200){
@@ -459,7 +459,7 @@ export default function Admin(){
         }
 
         axios
-        .post('https://rider-monitoring-app-backend.onrender.com/register-user-admin', userDetails)
+        .post('http://192.168.50.139:8082/register-user-admin', userDetails)
         .then(async response=> {
           const data = response.data;
           if (data.status === 200){

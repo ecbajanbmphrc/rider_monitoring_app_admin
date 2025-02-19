@@ -458,11 +458,10 @@ export default function Attendance() {
       selectDate: selectDate,
     };
 
-    setALoading(true);
 
     await axios
       .post(
-        "https://rider-monitoring-app-backend.onrender.com/retrieve-user-attendance-today",
+        "http://192.168.50.139:8082/retrieve-user-attendance-today",
         passData
       )
       .then(async (response) => {
@@ -484,9 +483,9 @@ export default function Attendance() {
         });
 
         setUserData(newData);
-        setALoading(false);
+     
       });
-    setALoading(false);  
+   
   }
 
   async function getExportData() {
@@ -512,7 +511,7 @@ export default function Attendance() {
     };
 
     await axios
-      .post("https://rider-monitoring-app-backend.onrender.com/export-attendance-data", passData)
+      .post("http://192.168.50.139:8082/export-attendance-data", passData)
       .then(async (response) => {
         const data = await response.data.data;
 
@@ -678,13 +677,11 @@ export default function Attendance() {
       });
   }
 
-  function testTimeAttendance() {
-    const time = "3:57:26 PM";
-    const date = new Date(`2025-01-20 ${time}`);
-    console.log(userDateAttendance);
-  }
+
 
   async function retrieveDateAttendance() {
+
+    setALoading(true);
 
     if(userDateAttendance === null){
 
@@ -694,6 +691,7 @@ export default function Attendance() {
         icon: "error",
         confirmButtonColor: "#3085d6",
       }).then((result) => {});
+      setALoading(false);
       return
     }
 
@@ -713,7 +711,7 @@ export default function Attendance() {
     };
 
     await axios
-      .post("https://rider-monitoring-app-backend.onrender.com/select-user-date-attendance", getData)
+      .post("http://192.168.50.139:8082/select-user-date-attendance", getData)
       .then(async (response) => {
         const data = await response.data.data;
 
@@ -728,7 +726,7 @@ export default function Attendance() {
             icon: "warning",
             confirmButtonColor: "#3085d6",
           }).then((result) => {});
-      
+          setALoading(false);
           return
         }
 
@@ -744,11 +742,12 @@ export default function Attendance() {
 
         // console.log(rDate);
 
-        setRTimeIn(new Date(`${cDate} ${data[0].attendance.time_in}`));
-        setRTimeOut(new Date(`${cDate} ${data[0].attendance.time_out}`));
-        setOldTimeIn(new Date(`${cDate} ${data[0].attendance.time_in}`));
-        setOldTimeOut(new Date(`${cDate} ${data[0].attendance.time_out}`));
+        setRTimeIn(data[0].attendance.time_in ? new Date(`${cDate} ${data[0].attendance.time_in}`) : null);
+        setRTimeOut(data[0].attendance.time_out ? new Date(`${cDate} ${data[0].attendance.time_out}`) : null);
+        setOldTimeIn(data[0].attendance.time_in ? new Date(`${cDate} ${data[0].attendance.time_in}`) : null);
+        setOldTimeOut(data[0].attendance.time_out ? new Date(`${cDate} ${data[0].attendance.time_out}`) : null);
         setNewAttendance(true);
+        setALoading(false);
       });
   }
 
@@ -781,7 +780,7 @@ export default function Attendance() {
       "-" +
       userDateAttendance.$D;
 
-    console.log(rTimeIn);
+    console.log("zzzzzdsadsadsa",rTimeOut);
 
  
     const Rtimei = rTimeIn.$d
@@ -789,10 +788,17 @@ export default function Attendance() {
       : rTimeIn
       ? rTimeIn.toLocaleTimeString()
       : null;
-    const Rtimeo = rTimeOut.$d
-      ? rTimeOut.$d.toLocaleTimeString()
-      : rTimeOut
-      ? rTimeOut.toLocaleTimeString()
+    // const Rtimeo = rTimeOut.$d
+    //   ? rTimeOut.$d.toLocaleTimeString()
+    //   : rTimeOut
+    //   ? rTimeOut.toLocaleTimeString()
+    //   : null;
+
+    console.log("idi wow", rTimeOut)
+
+      const Rtimeo = rTimeOut
+      ? rTimeOut.$d ? rTimeOut.$d.toLocaleString()
+      : rTimeOut? rTimeOut.toLocaleTimeString() : null
       : null;
 
     const setData = {
@@ -808,7 +814,7 @@ export default function Attendance() {
     // console.log(Rtimei);
     // console.log(Rtimeo);
     await axios
-      .put("https://rider-monitoring-app-backend.onrender.com/update-user-attendance", setData)
+      .put("http://192.168.50.139:8082/update-user-attendance", setData)
       .then(async (response) => {
         const data = await response.data.status;
         if (data === 200) {
@@ -1028,7 +1034,7 @@ export default function Attendance() {
                     )}
 
 
-                     {aLoading && (
+                      {aLoading && (
                      <CircularProgress
                      size={24}
                      sx={{
@@ -1043,7 +1049,7 @@ export default function Attendance() {
 
                   )
 
-                  }
+                  } 
                   </Button>
                  
           

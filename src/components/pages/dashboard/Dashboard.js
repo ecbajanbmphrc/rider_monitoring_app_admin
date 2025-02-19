@@ -87,7 +87,7 @@ export default function Dashboard() {
 
   async function getDashboardData() {
     await axios
-      .post("http://192.168.50.139:8082/get-admin-data-dashboard")
+      .post("http://192.168.50.139:8082:8082/get-admin-data-dashboard")
       .then(async (response) => {
         const data = await response.data;
         const monthData = [];
