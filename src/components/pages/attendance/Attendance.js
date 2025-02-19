@@ -461,7 +461,7 @@ export default function Attendance() {
 
     await axios
       .post(
-        "http://192.168.50.139:8082/retrieve-user-attendance-today",
+        "https://rider-monitoring-app-backend.onrender.com/retrieve-user-attendance-today",
         passData
       )
       .then(async (response) => {
@@ -511,7 +511,7 @@ export default function Attendance() {
     };
 
     await axios
-      .post("http://192.168.50.139:8082/export-attendance-data", passData)
+      .post("https://rider-monitoring-app-backend.onrender.com/export-attendance-data", passData)
       .then(async (response) => {
         const data = await response.data.data;
 
@@ -711,7 +711,7 @@ export default function Attendance() {
     };
 
     await axios
-      .post("http://192.168.50.139:8082/select-user-date-attendance", getData)
+      .post("https://rider-monitoring-app-backend.onrender.com/select-user-date-attendance", getData)
       .then(async (response) => {
         const data = await response.data.data;
 
@@ -763,24 +763,31 @@ export default function Attendance() {
       return
     }
 
+    const sDay = userDateAttendance.$D;
+
+    const sMonth = userDateAttendance.$M + 1;
+
+    const sYear = userDateAttendance.$y;
+
 
     const sDate =
-      userDateAttendance.$M +
-      1 +
+      sMonth +
       "/" +
-      userDateAttendance.$D +
+      sDay +
       "/" +
-      userDateAttendance.$y;
+      sYear;
 
     const nDate =
-      userDateAttendance.$y +
-      1 +
+      sYear +
       "-" +
-      userDateAttendance.$M +
+      sMonth
+      +
       "-" +
-      userDateAttendance.$D;
+      sDay;
 
-    console.log("zzzzzdsadsadsa",rTimeOut);
+      console.log(userDateAttendance);
+
+    console.log("zzzzzdsadsadsa",nDate);
 
  
     const Rtimei = rTimeIn.$d
@@ -794,7 +801,6 @@ export default function Attendance() {
     //   ? rTimeOut.toLocaleTimeString()
     //   : null;
 
-    console.log("idi wow", rTimeOut)
 
       const Rtimeo = rTimeOut
       ? rTimeOut.$d ? rTimeOut.$d.toLocaleString()
@@ -814,7 +820,7 @@ export default function Attendance() {
     // console.log(Rtimei);
     // console.log(Rtimeo);
     await axios
-      .put("http://192.168.50.139:8082/update-user-attendance", setData)
+      .put("https://rider-monitoring-app-backend.onrender.com/update-user-attendance", setData)
       .then(async (response) => {
         const data = await response.data.status;
         if (data === 200) {
