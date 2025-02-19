@@ -458,7 +458,6 @@ export default function Attendance() {
       selectDate: selectDate,
     };
 
-    setALoading(true);
 
     await axios
       .post(
@@ -484,9 +483,9 @@ export default function Attendance() {
         });
 
         setUserData(newData);
-        setALoading(false);
+     
       });
-    setALoading(false);  
+   
   }
 
   async function getExportData() {
@@ -678,13 +677,11 @@ export default function Attendance() {
       });
   }
 
-  function testTimeAttendance() {
-    const time = "3:57:26 PM";
-    const date = new Date(`2025-01-20 ${time}`);
-    console.log(userDateAttendance);
-  }
+
 
   async function retrieveDateAttendance() {
+
+    setALoading(true);
 
     if(userDateAttendance === null){
 
@@ -694,6 +691,7 @@ export default function Attendance() {
         icon: "error",
         confirmButtonColor: "#3085d6",
       }).then((result) => {});
+      setALoading(false);
       return
     }
 
@@ -728,7 +726,7 @@ export default function Attendance() {
             icon: "warning",
             confirmButtonColor: "#3085d6",
           }).then((result) => {});
-      
+          setALoading(false);
           return
         }
 
@@ -744,11 +742,12 @@ export default function Attendance() {
 
         // console.log(rDate);
 
-        setRTimeIn(new Date(`${cDate} ${data[0].attendance.time_in}`));
-        setRTimeOut(new Date(`${cDate} ${data[0].attendance.time_out}`));
-        setOldTimeIn(new Date(`${cDate} ${data[0].attendance.time_in}`));
-        setOldTimeOut(new Date(`${cDate} ${data[0].attendance.time_out}`));
+        setRTimeIn(data[0].attendance.time_in ? new Date(`${cDate} ${data[0].attendance.time_in}`) : null);
+        setRTimeOut(data[0].attendance.time_out ? new Date(`${cDate} ${data[0].attendance.time_out}`) : null);
+        setOldTimeIn(data[0].attendance.time_in ? new Date(`${cDate} ${data[0].attendance.time_in}`) : null);
+        setOldTimeOut(data[0].attendance.time_out ? new Date(`${cDate} ${data[0].attendance.time_out}`) : null);
         setNewAttendance(true);
+        setALoading(false);
       });
   }
 
@@ -764,24 +763,31 @@ export default function Attendance() {
       return
     }
 
+    const sDay = userDateAttendance.$D;
+
+    const sMonth = userDateAttendance.$M + 1;
+
+    const sYear = userDateAttendance.$y;
+
 
     const sDate =
-      userDateAttendance.$M +
-      1 +
+      sMonth +
       "/" +
-      userDateAttendance.$D +
+      sDay +
       "/" +
-      userDateAttendance.$y;
+      sYear;
 
     const nDate =
-      userDateAttendance.$y +
-      1 +
+      sYear +
       "-" +
-      userDateAttendance.$M +
+      sMonth
+      +
       "-" +
-      userDateAttendance.$D;
+      sDay;
 
-    console.log(rTimeIn);
+      console.log(userDateAttendance);
+
+    console.log("zzzzzdsadsadsa",nDate);
 
  
     const Rtimei = rTimeIn.$d
@@ -789,10 +795,16 @@ export default function Attendance() {
       : rTimeIn
       ? rTimeIn.toLocaleTimeString()
       : null;
-    const Rtimeo = rTimeOut.$d
-      ? rTimeOut.$d.toLocaleTimeString()
-      : rTimeOut
-      ? rTimeOut.toLocaleTimeString()
+    // const Rtimeo = rTimeOut.$d
+    //   ? rTimeOut.$d.toLocaleTimeString()
+    //   : rTimeOut
+    //   ? rTimeOut.toLocaleTimeString()
+    //   : null;
+
+
+      const Rtimeo = rTimeOut
+      ? rTimeOut.$d ? rTimeOut.$d.toLocaleString()
+      : rTimeOut? rTimeOut.toLocaleTimeString() : null
       : null;
 
     const setData = {
@@ -1028,7 +1040,7 @@ export default function Attendance() {
                     )}
 
 
-                     {aLoading && (
+                      {aLoading && (
                      <CircularProgress
                      size={24}
                      sx={{
@@ -1043,7 +1055,7 @@ export default function Attendance() {
 
                   )
 
-                  }
+                  } 
                   </Button>
                  
           
