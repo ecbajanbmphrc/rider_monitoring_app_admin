@@ -27,6 +27,12 @@ const AdminRoute = () => {
                 }else{
                     return <Outlet/>
                 }
+            case '/dashboard':
+                if(checkLoggedIn === null){
+                    return <Navigate to = "/login"/>
+                }else{
+                    return <Outlet/>
+                }    
             
             case '/parcel':
                 if(checkLoggedIn === null){

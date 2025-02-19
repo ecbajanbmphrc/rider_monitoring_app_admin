@@ -1,6 +1,6 @@
 import { Link, NavLink } from "react-router-dom";
 import "./sidebar.css";
-import { Inventory, AssignmentInd, PeopleAlt, ManageAccounts, Warehouse, ExitToApp} from "@mui/icons-material";
+import { Inventory, AssignmentInd, PeopleAlt, ManageAccounts, Warehouse, ExitToApp, DashboardRounded} from "@mui/icons-material";
 import { styled } from "styled-components";
 import * as React from 'react';
 import { useLocation } from 'react-router-dom';
@@ -29,8 +29,18 @@ export default function Sidebar(){
            
               <div className="sidebarWrapper">
                 <div className="sidebarMenu">
-                    <h3 className="sidebarTitle">Dashboard</h3>
+                    <h3 className="sidebarTitle">Menu</h3>
                     <ul className="sidebarList">
+                    <NavLink to="/dashboard" style={{ textDecoration: 'none' }} onClick={() => handleItemClick("/dashboard")}>
+                     <li
+                      className={`sidebarListItem ${
+                      activeItem === "/dashboard" ? "active" : ""
+                      }`}
+                     >
+                            <DashboardRounded className="sidebarIcon"/>
+                            Dashboard
+                        </li>
+                    </NavLink>   
                     <NavLink to="/view-admin-accounts" style={{ textDecoration: 'none' }} onClick={() => handleItemClick("/view-accounts")}>
                      <li
                       className={`sidebarListItem ${
