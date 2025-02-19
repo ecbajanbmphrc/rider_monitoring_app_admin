@@ -344,7 +344,7 @@ export default function Account() {
 
   async function getUser() {
     await axios
-      .post("http://192.168.50.139:8082/get-rider-user", requestBody)
+      .post("https://rider-monitoring-app-backend.onrender.com/get-rider-user", requestBody)
       .then(async (response) => {
         const data = await response.data.data;
 
@@ -378,7 +378,7 @@ export default function Account() {
 
   async function getHubList() {
     await axios
-      .post("http://192.168.50.139:8082/fetch-hub", requestBody)
+      .post("https://rider-monitoring-app-backend.onrender.com/fetch-hub", requestBody)
       .then(async (response) => {
         const data = await response.data.data;
 
@@ -401,7 +401,7 @@ export default function Account() {
   async function setStatus() {
     console.log("check body", requestBody);
     await axios
-      .put("http://192.168.50.139:8082/update-status", requestBody)
+      .put("https://rider-monitoring-app-backend.onrender.com/update-status", requestBody)
       .then(async (response) => {
         const data = await response.data.status;
 
@@ -430,7 +430,7 @@ export default function Account() {
 
   async function updateUserHub() {
     await axios
-      .put("http://192.168.50.139:8082/update-user-hub", {
+      .put("https://rider-monitoring-app-backend.onrender.com/update-user-hub", {
         hub_id: updateHub,
         email: modalEmail,
       })
@@ -470,7 +470,7 @@ export default function Account() {
 
   async function updateUserDetails() {
     await axios
-      .put("http://192.168.50.139:8082/update-user-detail-admin", {
+      .put("https://rider-monitoring-app-backend.onrender.com/update-user-detail-admin", {
         rider_id: modalRiderId,
         first_name: modalFirstName,
         middle_name: modalMiddleName,
