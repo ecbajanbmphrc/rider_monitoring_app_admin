@@ -136,10 +136,11 @@ export default function ViewAttendance() {
 
           return;
         };
-        const check = params.row.time_out;
+        const checkTimeout = params.row.time_out;
+        const checkTimeoutLoc = params.row.time_out_loc;
         return (
           <>
-            {check !== "no record" ? (
+            {(checkTimeout !== "no record" && checkTimeout !== "no record") ? (
               <Stack style={{ marginTop: 10, alignItems: 'center' }}>
                 <Button
                   variant="contained"
@@ -154,7 +155,8 @@ export default function ViewAttendance() {
               </Stack>
             ) : (
               <Stack style={{ marginBottom: 100,alignItems: 'center' }}>-</Stack>
-            )}
+            )
+            }
           </>
         );
       },
@@ -217,19 +219,17 @@ export default function ViewAttendance() {
       .post("https://rider-monitoring-app-backend.onrender.com/view-user-attendance", body)
       .then(async (response) => {
         const data = await response.data.data;
-        console.log(data);
+        console.log("zadwdwddw",data);
         const newData = data.map((data, key) => {
           return {
             count: key + 1,
             date: data.date,
             time_in: data.time_in,
-            time_in_loc: data.time_in_coordinates.latitude,
             time_in_coordinates: data.time_in_coordinates,
+            time_in_loc: data.time_in_coordinates? data.time_in_coordinates.latitude ? data.time_in_coordinates.latitude : "no record" : "no record",
             time_out: data.time_out ? data.time_out : "no record",
             time_out_coordinates: data.time_out_coordinates,
-            time_out_loc: data.time_out_coordinates.latitude
-              ? data.time_out_coordinates.latitude
-              : "no record",
+            time_out_loc: data.time_out_coordinates ? data.time_out_coordinates.latitude ? data.time_out_coordinates.latitude : "no record" : "no record",
             proof: data.assigned_parcel_screenshot? data.assigned_parcel_screenshot : "no record",
             action: data.time_out ? data.time_out : "no record",
           };

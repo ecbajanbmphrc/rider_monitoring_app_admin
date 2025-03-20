@@ -518,6 +518,8 @@ export default function Attendance() {
         const newData = data.map((data, key) => {
           return {
             count: key + 1,
+            rider_id: data.rider_id,
+            rider_type: data.rider_type,
             fullname: data.last_name + ", " + data.first_name,
             //  email: data.email,
             date: data.date,
@@ -537,6 +539,8 @@ export default function Attendance() {
         ws["!cols"] = [
           { wch: 4 },
           { wch: 30 },
+          { wch: 30 },
+          { wch: 30 },
           { wch: 10 },
           { wch: 15 },
           { wch: 15 },
@@ -544,7 +548,7 @@ export default function Attendance() {
 
         XLSX.utils.sheet_add_aoa(
           ws,
-          [["#", "Fullname", "Date", "Time In", "Time Out"]],
+          [["#", "Rider ID" , "Rider Type","Fullname", "Date", "Time In", "Time Out"]],
           { origin: "A1" }
         );
 
@@ -629,6 +633,46 @@ export default function Attendance() {
           },
         };
         ws["E1"].s = {
+          font: {
+            name: "#",
+            sz: 10,
+            bold: true,
+            color: {
+              rgb: "FFFFFFF",
+            },
+          },
+          alignment: {
+            vertical: "center",
+            horizontal: "center",
+          },
+          fill: {
+            patternType: "solid",
+            bgColor: {
+              rgb: "FFFFFFF",
+            },
+          },
+        };
+        ws["F1"].s = {
+          font: {
+            name: "#",
+            sz: 10,
+            bold: true,
+            color: {
+              rgb: "FFFFFFF",
+            },
+          },
+          alignment: {
+            vertical: "center",
+            horizontal: "center",
+          },
+          fill: {
+            patternType: "solid",
+            bgColor: {
+              rgb: "FFFFFFF",
+            },
+          },
+        };
+        ws["G1"].s = {
           font: {
             name: "#",
             sz: 10,
@@ -795,17 +839,12 @@ export default function Attendance() {
       : rTimeIn
       ? rTimeIn.toLocaleTimeString()
       : null;
-    // const Rtimeo = rTimeOut.$d
-    //   ? rTimeOut.$d.toLocaleTimeString()
-    //   : rTimeOut
-    //   ? rTimeOut.toLocaleTimeString()
-    //   : null;
 
-
-      const Rtimeo = rTimeOut
-      ? rTimeOut.$d ? rTimeOut.$d.toLocaleString()
-      : rTimeOut? rTimeOut.toLocaleTimeString() : null
+    const Rtimeo = rTimeOut
+      ? rTimeOut.$d? rTimeOut.$d.toLocaleTimeString()
+      : rTimeOut.toLocaleTimeString()
       : null;
+
 
     const setData = {
       nDate: nDate,
@@ -816,9 +855,7 @@ export default function Attendance() {
       dExist: newAttendance,
     };
 
-    console.log(setData);
-    // console.log(Rtimei);
-    // console.log(Rtimeo);
+   
     await axios
       .put("https://rider-monitoring-app-backend.onrender.com/update-user-attendance", setData)
       .then(async (response) => {
