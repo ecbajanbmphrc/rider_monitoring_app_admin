@@ -163,7 +163,7 @@ export default function Account() {
   };
 
   const handleSelectHub = (event) => {
-    setUpdateHub(event.target.value || "");
+    setUpdateHub(event.target.value || ""); 
   };
 
   const handleOpenHubDialog = () => {
@@ -599,7 +599,11 @@ export default function Account() {
                 >
                   <MenuItem value={"Null"}>None</MenuItem>
                   <MenuItem value={"2WH"}>2 Wheel</MenuItem>
+                  <MenuItem value={"3WH"}>3 Wheel</MenuItem>
                   <MenuItem value={"4WH"}>4 Wheel</MenuItem>
+                  <MenuItem value={"Mobile Hub"}>Mobile hub</MenuItem>
+                  <MenuItem value={"Walker"}>Walker</MenuItem>
+                  <MenuItem value={"Flexi"}>Flexi</MenuItem>
                 </Select>
               </FormControl>
               {selectViewModal && (
