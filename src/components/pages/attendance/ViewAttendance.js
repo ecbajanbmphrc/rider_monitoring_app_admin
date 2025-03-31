@@ -207,9 +207,7 @@ export default function ViewAttendance() {
     },
   ];
 
-  function setLocation() {
-    console.log();
-  }
+
 
   async function getUser() {
     const body = { user: userEmail };
@@ -219,7 +217,7 @@ export default function ViewAttendance() {
       .post("https://rider-monitoring-app-backend.onrender.com/view-user-attendance", body)
       .then(async (response) => {
         const data = await response.data.data;
-        console.log("zadwdwddw",data);
+        
         const newData = data.map((data, key) => {
           return {
             count: key + 1,
@@ -234,7 +232,7 @@ export default function ViewAttendance() {
             action: data.time_out ? data.time_out : "no record",
           };
         });
-        console.log(newData, "testing get data");
+
         setUserData(newData);
       });
   }
