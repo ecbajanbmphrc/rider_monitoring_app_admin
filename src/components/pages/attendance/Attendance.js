@@ -2,7 +2,11 @@ import "./attendance.css";
 import React, { useEffect, useState } from "react";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import axios from "axios";
-import { CollectionsBookmarkOutlined, FileDownload, ReceiptLong } from "@mui/icons-material";
+import {
+  CollectionsBookmarkOutlined,
+  FileDownload,
+  ReceiptLong,
+} from "@mui/icons-material";
 import RoomIcon from "@mui/icons-material/Room";
 import { Button, Stack } from "@mui/material";
 import Typography from "@mui/material/Typography";
@@ -35,7 +39,7 @@ import TextField from "@mui/material/TextField";
 import EditIcon from "@mui/icons-material/Edit";
 import { DesktopTimePicker } from "@mui/x-date-pickers/DesktopTimePicker";
 import CircularProgress from "@mui/material/CircularProgress";
-
+import FormControl from "@mui/material/FormControl";
 // import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
 export default function Attendance() {
@@ -49,7 +53,7 @@ export default function Attendance() {
   const handleClose = () => setOpen(false);
   const [openAdjustment, setOpenAdjustment] = useState(false);
   const handleOpenAdjustment = () => setOpenAdjustment(true);
-  const handleCloseAdjustment = ( reason) => {
+  const handleCloseAdjustment = (reason) => {
     if (reason !== "backdropClick") {
       setRTimeIn(null);
       setRTimeOut(null);
@@ -445,19 +449,10 @@ export default function Attendance() {
     handleCloseDialog();
   };
 
-  async function handleOnExport() {
-    const bDate = dateBegin.$d;
-
-    const eDate = dateEnd.$d;
-
-    const newBDate = bDate.getTime();
-  }
-
   async function getUser(selectDate) {
     const passData = {
       selectDate: selectDate,
     };
-
 
     await axios
       .post(
@@ -483,9 +478,7 @@ export default function Attendance() {
         });
 
         setUserData(newData);
-     
       });
-   
   }
 
   async function getExportData() {
@@ -519,12 +512,15 @@ export default function Attendance() {
           return {
             count: key + 1,
             rider_id: data.rider_id,
-            rider_type: data.rider_type,
             fullname: data.last_name + ", " + data.first_name,
-            //  email: data.email,
+            rider_type: data.rider_type,
+            hub_name: data.hub_name,
             date: data.date,
+            day: data.day,
             time_in: data.timeIn,
             time_out: data.timeOut ? data.timeOut : "no record",
+            total_hours: data.totalHours,
+            remarks: data.remarks,
           };
         });
 
@@ -544,11 +540,29 @@ export default function Attendance() {
           { wch: 10 },
           { wch: 15 },
           { wch: 15 },
+          { wch: 15 },
+          { wch: 15 },
+          { wch: 15 },
+          { wch: 15 },
         ];
 
         XLSX.utils.sheet_add_aoa(
           ws,
-          [["#", "Rider ID" , "Rider Type","Fullname", "Date", "Time In", "Time Out"]],
+          [
+            [
+              "#",
+              "Rider ID",
+              "Fullname",
+              "Rider Type",
+              "Assigned Hub",
+              "Date",
+              "Day",
+              "Time In",
+              "Time Out",
+              "Hrs Rendered",
+              "Day Rendered",
+            ],
+          ],
           { origin: "A1" }
         );
 
@@ -692,6 +706,86 @@ export default function Attendance() {
             },
           },
         };
+        ws["H1"].s = {
+          font: {
+            name: "#",
+            sz: 10,
+            bold: true,
+            color: {
+              rgb: "FFFFFFF",
+            },
+          },
+          alignment: {
+            vertical: "center",
+            horizontal: "center",
+          },
+          fill: {
+            patternType: "solid",
+            bgColor: {
+              rgb: "FFFFFFF",
+            },
+          },
+        };
+        ws["I1"].s = {
+          font: {
+            name: "#",
+            sz: 10,
+            bold: true,
+            color: {
+              rgb: "FFFFFFF",
+            },
+          },
+          alignment: {
+            vertical: "center",
+            horizontal: "center",
+          },
+          fill: {
+            patternType: "solid",
+            bgColor: {
+              rgb: "FFFFFFF",
+            },
+          },
+        };
+        ws["J1"].s = {
+          font: {
+            name: "#",
+            sz: 10,
+            bold: true,
+            color: {
+              rgb: "FFFFFFF",
+            },
+          },
+          alignment: {
+            vertical: "center",
+            horizontal: "center",
+          },
+          fill: {
+            patternType: "solid",
+            bgColor: {
+              rgb: "FFFFFFF",
+            },
+          },
+        };
+        ws["K1"].s = {
+          font: {
+            name: "#",
+            sz: 10,
+            bold: true,
+            color: {
+              rgb: "FFFFFFF",
+            },
+          },
+          alignment: {
+            vertical: "center",
+            horizontal: "center",
+          },
+          fill: {
+            patternType: "solid",
+            bgColor: {
+              rgb: "FFFFFFF",
+            },
+          },
+        };
         // ws["F1"].s = { // set the style for target cell
         //   font: {
         //     name: '#',
@@ -721,14 +815,11 @@ export default function Attendance() {
       });
   }
 
-
-
   async function retrieveDateAttendance() {
-
     setALoading(true);
+    await new Promise((resolve) => setTimeout(resolve, 1750));
 
-    if(userDateAttendance === null){
-
+    if (userDateAttendance === null) {
       Swal.fire({
         title: "Error",
         text: "Please select user's date of attendance",
@@ -736,7 +827,7 @@ export default function Attendance() {
         confirmButtonColor: "#3085d6",
       }).then((result) => {});
       setALoading(false);
-      return
+      return;
     }
 
     const sDate =
@@ -771,7 +862,7 @@ export default function Attendance() {
             confirmButtonColor: "#3085d6",
           }).then((result) => {});
           setALoading(false);
-          return
+          return;
         }
 
         const cDate =
@@ -784,27 +875,40 @@ export default function Attendance() {
 
         const rDateTimeIn = new Date(`${cDate} ${data[0].attendance.time_in}`);
 
-        // console.log(rDate);
-
-        setRTimeIn(data[0].attendance.time_in ? new Date(`${cDate} ${data[0].attendance.time_in}`) : null);
-        setRTimeOut(data[0].attendance.time_out ? new Date(`${cDate} ${data[0].attendance.time_out}`) : null);
-        setOldTimeIn(data[0].attendance.time_in ? new Date(`${cDate} ${data[0].attendance.time_in}`) : null);
-        setOldTimeOut(data[0].attendance.time_out ? new Date(`${cDate} ${data[0].attendance.time_out}`) : null);
+        setRTimeIn(
+          data[0].attendance.time_in
+            ? new Date(`${cDate} ${data[0].attendance.time_in}`)
+            : null
+        );
+        setRTimeOut(
+          data[0].attendance.time_out
+            ? new Date(`${cDate} ${data[0].attendance.time_out}`)
+            : null
+        );
+        setOldTimeIn(
+          data[0].attendance.time_in
+            ? new Date(`${cDate} ${data[0].attendance.time_in}`)
+            : null
+        );
+        setOldTimeOut(
+          data[0].attendance.time_out
+            ? new Date(`${cDate} ${data[0].attendance.time_out}`)
+            : null
+        );
         setNewAttendance(true);
         setALoading(false);
       });
   }
 
   async function updateUserAttendance() {
-
-    if(userDateAttendance === null){
+    if (userDateAttendance === null) {
       Swal.fire({
         title: "Error",
         text: "Please select target date!",
         icon: "error",
         confirmButtonColor: "#3085d6",
       }).then((result) => {});
-      return
+      return;
     }
 
     const sDay = userDateAttendance.$D;
@@ -813,38 +917,38 @@ export default function Attendance() {
 
     const sYear = userDateAttendance.$y;
 
+    const sDate = sMonth + "/" + sDay + "/" + sYear;
 
-    const sDate =
-      sMonth +
-      "/" +
-      sDay +
-      "/" +
-      sYear;
+    const nDate = sYear + "-" + sMonth + "-" + sDay;
 
-    const nDate =
-      sYear +
-      "-" +
-      sMonth
-      +
-      "-" +
-      sDay;
+    console.log("qqqqq", rTimeIn);
 
-      console.log(userDateAttendance);
-
-    console.log("zzzzzdsadsadsa",nDate);
-
- 
-    const Rtimei = rTimeIn.$d
-      ? rTimeIn.$d.toLocaleTimeString()
-      : rTimeIn
-      ? rTimeIn.toLocaleTimeString()
+    const Rtimei = rTimeIn
+      ? rTimeIn.$d
+        ? rTimeIn.$d.toLocaleTimeString()
+        : rTimeIn.toLocaleTimeString()
       : null;
 
     const Rtimeo = rTimeOut
-      ? rTimeOut.$d? rTimeOut.$d.toLocaleTimeString()
-      : rTimeOut.toLocaleTimeString()
+      ? rTimeOut.$d
+        ? rTimeOut.$d.toLocaleTimeString()
+        : rTimeOut.toLocaleTimeString()
       : null;
 
+    if (Rtimei !== null && Rtimeo !== null) {
+      const tTimei = rTimeIn.$d ? rTimeIn.$d : rTimeIn ? rTimeIn : null;
+
+      const tTimeo = rTimeOut ? (rTimeOut.$d ? rTimeOut.$d : rTimeOut) : null;
+
+      Swal.fire({
+        title: "Error",
+        text: "Time out must be later than time in",
+        icon: "error",
+        confirmButtonColor: "#3085d6",
+      });
+
+      return;
+    }
 
     const setData = {
       nDate: nDate,
@@ -855,7 +959,6 @@ export default function Attendance() {
       dExist: newAttendance,
     };
 
-   
     await axios
       .put("https://rider-monitoring-app-backend.onrender.com/update-user-attendance", setData)
       .then(async (response) => {
@@ -867,7 +970,7 @@ export default function Attendance() {
             icon: "success",
             confirmButtonColor: "#3085d6",
           }).then(() => {
-            handleCloseAdjustment()
+            handleCloseAdjustment();
           });
         } else {
           Swal.fire({
@@ -875,9 +978,7 @@ export default function Attendance() {
             text: "Error on updating user details!",
             icon: "error",
             confirmButtonColor: "#3085d6",
-          }).then(() => {
-        
-          });
+          }).then(() => {});
         }
       });
   }
@@ -1045,62 +1146,51 @@ export default function Attendance() {
           <Box sx={adjusmentModal}>
             <div>
               <p>User : {adjusmentFullName}</p>
-              <Stack direction="row" spacing={0}>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DatePicker
-                    label="Select Date"
-                    onChange={(newValue) => {
-                      console.log(newValue);
-                      setUserDateAttendance(newValue);
-                    }}
-                    // slotProps={{
-                    //   popper: {
-                    //     sx: {
-                    //       ".MuiPaper-root": { border: "1px solid blue", borderRadius: "100px" },
-                    //     },
-                    //   },
-                    // }}
-                    maxDate={currentDay}
-                  ></DatePicker>
-                </LocalizationProvider>
-       
-                  <Button
-                    onClick={retrieveDateAttendance}
-                    variant="contained"
-                    style={{ marginLeft: 5 }}
-                    disabled={aLoading}
-                  >
-                  
-                    {!aLoading &&(
-                      <SearchIcon/>
-                      
-                    )}
-
-
-                      {aLoading && (
-                     <CircularProgress
-                     size={24}
-                     sx={{
-                       color: '#FFFFFF',
-                       position: 'absolute',
-                       top: '50%',
-                       left: '50%',
-                       marginTop: '-12px',
-                       marginLeft: '-12px',
-                     }}
-                   />
-
-                  )
-
-                  } 
-                  </Button>
-                 
-          
+              <Stack direction="row" spacing={1}>
+                <FormControl
+                  // className={className}
+                  variant="outlined"
+                  size="medium"
+                  // required={required}0
+                  // error={hasError}
+                  // disabled={disabled}
+                  fullWidth
+                >
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Select Date"
+                      onChange={(newValue) => {
+                        console.log(newValue);
+                        retrieveDateAttendance();
+                        setUserDateAttendance(newValue);
+                      }}
+                      // slotProps={{
+                      //   popper: {
+                      //     sx: {
+                      //       ".MuiPaper-root": { border: "1px solid blue", borderRadius: "100px", width: "100px" },
+                      //     },
+                      //   },
+                      // }}
+                      maxDate={currentDay}
+                    ></DatePicker>
+                  </LocalizationProvider>
+                </FormControl>
               </Stack>
               <Stack spacing={2}>
-                <p>Time In:</p>
-                <Stack direction="row" spacing={2}>
-                  {/* <TextField
+                {!aLoading && (
+                  <>
+                    <p>Time In:</p>
+                    <Stack direction="row" spacing={2}>
+                      <FormControl
+                        // className={className}
+                        variant="outlined"
+                        size="medium"
+                        // required={required}0
+                        // error={hasError}
+                        // disabled={disabled}
+                        fullWidth
+                      >
+                        {/* <TextField
                           // label="Time In"
                           id="outlined-read-only-input"
                           value={rTimeIn}
@@ -1109,45 +1199,93 @@ export default function Attendance() {
                           }}
                           style={{width: '80%'}}
                         /> */}
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DesktopTimePicker
-                      onChange={(value) => setRTimeIn(value)}
-                      value={dayjs(rTimeIn)}
-                    />
-                  </LocalizationProvider>
-                  {/* <Button
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                          <DesktopTimePicker
+                            onChange={(value) => setRTimeIn(value)}
+                            value={dayjs(rTimeIn)}
+                          />
+                        </LocalizationProvider>
+                        {/* <Button
                     onClick={testTimeAttendance}
                     variant="contained"
                     style={{ marginLeft: 3 }}
                   >
                     <EditIcon />
                   </Button> */}
-                </Stack>
-                <p>Time Out:</p>
-                <Stack direction="row">
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DesktopTimePicker
-                      onChange={(value) => setRTimeOut(value)}
-                      value={dayjs(rTimeOut)}
-                    />
-                  </LocalizationProvider>
-                  {/* <Button
+                      </FormControl>
+                    </Stack>
+                    <p>Time Out:</p>
+
+                    <Stack direction="row">
+                      <FormControl
+                        // className={className}
+                        variant="outlined"
+                        size="medium"
+                        // required={required}0
+                        // error={hasError}
+                        // disabled={disabled}
+                        fullWidth
+                      >
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                          <DesktopTimePicker
+                            onChange={(value) => setRTimeOut(value)}
+                            value={dayjs(rTimeOut)}
+                          />
+                        </LocalizationProvider>
+                        {/* <Button
                     onClick={retrieveDateAttendance}
                     variant="contained"
                     style={{ marginLeft: 3 }}
                   >
                     <EditIcon />
                   </Button> */}
-                </Stack>
+                      </FormControl>
+                    </Stack>
+                  </>
+                )}
+                {aLoading && (
+                  <Stack direction={"column"}>
+                    <Box
+                      display="flex"
+                      justifyContent="center"
+                      alignItems="center"
+                      sx={{
+                        padding: "50px",
+                        height: "50px",
+                        color: "#D4C9BE",
+                        // bgcolor: 'primary.main',
+                        fontSize: "15px",
+                      }}
+                    >
+                      Loading
+                      <CircularProgress
+                        size={75}
+                        sx={{
+                          alignItems: "center",
+                          color: "#D4C9BE",
+                          position: "absolute",
+                          //  marginBottom: '100%',
+                          //  marginLeft : '50%'
+                          //  top: '50%',
+                          //  left: '50%',
+                          //  marginTop: '-12px',
+                          //  marginLeft: '-12px',
+                        }}
+                      />
+                    </Box>
+                  </Stack>
+                )}
               </Stack>
-            </div>
-            <Stack>
-              <DialogActions>
+              <Stack>
+                <Button sx={{ color: "white", backgroundColor: "blue" }} onClick={updateUserAttendance}> Save</Button>
+                <Button sx={{ color: "white", backgroundColor: "red" }} onClick={handleCloseAdjustment}> Close</Button>
+                {/* <DialogActions>
                 <Button onClick={handleCloseAdjustment}>Close</Button>
 
                 <Button onClick={updateUserAttendance}>Save</Button>
-              </DialogActions>
-            </Stack>
+              </DialogActions> */}
+              </Stack>
+            </div>
           </Box>
         </Modal>
 
@@ -1164,11 +1302,13 @@ export default function Attendance() {
                 <DatePicker
                   label="Select Start Date"
                   onChange={(newValue) => setDateBegin(newValue)}
+                  maxDate={currentDay}
                 ></DatePicker>
                 <div style={{ margin: 10 }}></div>
                 <DatePicker
                   label="Select End Date"
                   onChange={(newValue) => setDateEnd(newValue)}
+                  maxDate={currentDay}
                 ></DatePicker>
               </LocalizationProvider>
             </DialogContentText>
@@ -1202,7 +1342,7 @@ const adjusmentModal = {
   left: "50%",
   transform: "translate(-50%, -50%)",
   width: 300,
-  height: 350,
+  height: 400,
   bgcolor: "background.paper",
   border: "2px solid #000",
   boxShadow: 24,
