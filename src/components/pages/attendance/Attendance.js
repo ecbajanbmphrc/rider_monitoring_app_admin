@@ -944,8 +944,9 @@ export default function Attendance() {
           icon: "error",
           confirmButtonColor: "#3085d6",
         });
+        return;
       }
-      return;
+    
     }
 
     const setData = {
