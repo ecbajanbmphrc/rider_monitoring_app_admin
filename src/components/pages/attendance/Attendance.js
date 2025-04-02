@@ -456,7 +456,7 @@ export default function Attendance() {
 
     await axios
       .post(
-        "http://192.168.50.139:8082/retrieve-user-attendance-today",
+        "https://rider-monitoring-app-backend.onrender.com/retrieve-user-attendance-today",
         passData
       )
       .then(async (response) => {
@@ -504,7 +504,7 @@ export default function Attendance() {
     };
 
     await axios
-      .post("http://192.168.50.139:8082/export-attendance-data", passData)
+      .post("https://rider-monitoring-app-backend.onrender.com/export-attendance-data", passData)
       .then(async (response) => {
         const data = await response.data.data;
 
@@ -840,7 +840,7 @@ export default function Attendance() {
     };
 
     await axios
-      .post("http://192.168.50.139:8082/select-user-date-attendance", getData)
+      .post("https://rider-monitoring-app-backend.onrender.com/select-user-date-attendance", getData)
       .then(async (response) => {
         const data = await response.data.data;
 
@@ -970,7 +970,7 @@ export default function Attendance() {
     }).then(async (result)=> {
       if(result.isConfirmed){
       await axios
-      .put("http://192.168.50.139:8082/update-user-attendance", setData)
+      .put("https://rider-monitoring-app-backend.onrender.com/update-user-attendance", setData)
       .then(async (response) => {
         const data = await response.data.status;
         if (data === 200) {
