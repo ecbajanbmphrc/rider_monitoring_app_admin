@@ -456,7 +456,7 @@ export default function Attendance() {
 
     await axios
       .post(
-        "https://rider-monitoring-app-backend.onrender.com/retrieve-user-attendance-today",
+        "http://192.168.50.139:8082/retrieve-user-attendance-today",
         passData
       )
       .then(async (response) => {
@@ -504,7 +504,7 @@ export default function Attendance() {
     };
 
     await axios
-      .post("https://rider-monitoring-app-backend.onrender.com/export-attendance-data", passData)
+      .post("http://192.168.50.139:8082/export-attendance-data", passData)
       .then(async (response) => {
         const data = await response.data.data;
 
@@ -815,11 +815,11 @@ export default function Attendance() {
       });
   }
 
-  async function retrieveDateAttendance() {
+  async function retrieveDateAttendance(date) {
     setALoading(true);
     await new Promise((resolve) => setTimeout(resolve, 1750));
 
-    if (userDateAttendance === null) {
+    if (date === null) {
       Swal.fire({
         title: "Error",
         text: "Please select user's date of attendance",
@@ -830,13 +830,7 @@ export default function Attendance() {
       return;
     }
 
-    const sDate =
-      userDateAttendance.$M +
-      1 +
-      "/" +
-      userDateAttendance.$D +
-      "/" +
-      userDateAttendance.$y;
+    const sDate = date.$M + 1 + "/" + date.$D + "/" + date.$y;
 
     console.log(sDate);
 
@@ -846,7 +840,7 @@ export default function Attendance() {
     };
 
     await axios
-      .post("https://rider-monitoring-app-backend.onrender.com/select-user-date-attendance", getData)
+      .post("http://192.168.50.139:8082/select-user-date-attendance", getData)
       .then(async (response) => {
         const data = await response.data.data;
 
@@ -865,13 +859,7 @@ export default function Attendance() {
           return;
         }
 
-        const cDate =
-          userDateAttendance.$M +
-          1 +
-          "-" +
-          userDateAttendance.$D +
-          "-" +
-          userDateAttendance.$y;
+        const cDate = date.$M + 1 + "-" + date.$D + "-" + date.$y;
 
         const rDateTimeIn = new Date(`${cDate} ${data[0].attendance.time_in}`);
 
@@ -935,18 +923,28 @@ export default function Attendance() {
         : rTimeOut.toLocaleTimeString()
       : null;
 
+    if (Rtimei === null) {
+      Swal.fire({
+        title: "Error",
+        text: "Please select time in!",
+        icon: "error",
+        confirmButtonColor: "#3085d6",
+      });
+      return;
+    }
+
     if (Rtimei !== null && Rtimeo !== null) {
       const tTimei = rTimeIn.$d ? rTimeIn.$d : rTimeIn ? rTimeIn : null;
 
       const tTimeo = rTimeOut ? (rTimeOut.$d ? rTimeOut.$d : rTimeOut) : null;
-
-      Swal.fire({
-        title: "Error",
-        text: "Time out must be later than time in",
-        icon: "error",
-        confirmButtonColor: "#3085d6",
-      });
-
+      if (tTimei > tTimeo) {
+        Swal.fire({
+          title: "Error",
+          text: "Time out must be later than time in",
+          icon: "error",
+          confirmButtonColor: "#3085d6",
+        });
+      }
       return;
     }
 
@@ -959,8 +957,20 @@ export default function Attendance() {
       dExist: newAttendance,
     };
 
-    await axios
-      .put("https://rider-monitoring-app-backend.onrender.com/update-user-attendance", setData)
+
+    
+    Swal.fire({
+      title: "Do you want to update the attendance details?",
+      text: "",
+      icon: "question",
+      confirmButtonColor: "#3085d6",
+      confirmButtonText: "Confirm",
+      showDenyButton: true,
+      denyButtonText: "Cancel"
+    }).then(async (result)=> {
+      if(result.isConfirmed){
+      await axios
+      .put("http://192.168.50.139:8082/update-user-attendance", setData)
       .then(async (response) => {
         const data = await response.data.status;
         if (data === 200) {
@@ -978,9 +988,16 @@ export default function Attendance() {
             text: "Error on updating user details!",
             icon: "error",
             confirmButtonColor: "#3085d6",
-          }).then(() => {});
+          })
         }
       });
+    }else if(result.isDenied){
+      return
+    }
+
+    })
+
+ 
   }
 
   React.useEffect(() => {
@@ -1161,7 +1178,7 @@ export default function Attendance() {
                       label="Select Date"
                       onChange={(newValue) => {
                         console.log(newValue);
-                        retrieveDateAttendance();
+                        retrieveDateAttendance(newValue);
                         setUserDateAttendance(newValue);
                       }}
                       // slotProps={{
@@ -1179,8 +1196,7 @@ export default function Attendance() {
               <Stack spacing={2}>
                 {!aLoading && (
                   <>
-                    <p>Time In:</p>
-                    <Stack direction="row" spacing={2}>
+                    <Stack direction="row">
                       <FormControl
                         // className={className}
                         variant="outlined"
@@ -1188,6 +1204,9 @@ export default function Attendance() {
                         // required={required}0
                         // error={hasError}
                         // disabled={disabled}
+                        sx={{
+                          marginTop: 3,
+                        }}
                         fullWidth
                       >
                         {/* <TextField
@@ -1201,6 +1220,7 @@ export default function Attendance() {
                         /> */}
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                           <DesktopTimePicker
+                            label="Time in"
                             onChange={(value) => setRTimeIn(value)}
                             value={dayjs(rTimeIn)}
                           />
@@ -1214,7 +1234,6 @@ export default function Attendance() {
                   </Button> */}
                       </FormControl>
                     </Stack>
-                    <p>Time Out:</p>
 
                     <Stack direction="row">
                       <FormControl
@@ -1225,11 +1244,15 @@ export default function Attendance() {
                         // error={hasError}
                         // disabled={disabled}
                         fullWidth
+                        sx={{
+                          marginTop: 1,
+                        }}
                       >
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                           <DesktopTimePicker
                             onChange={(value) => setRTimeOut(value)}
                             value={dayjs(rTimeOut)}
+                            label="Time out"
                           />
                         </LocalizationProvider>
                         {/* <Button
@@ -1277,8 +1300,31 @@ export default function Attendance() {
                 )}
               </Stack>
               <Stack>
-                <Button sx={{ color: "white", backgroundColor: "blue" }} onClick={updateUserAttendance}> Save</Button>
-                <Button sx={{ color: "white", backgroundColor: "red" }} onClick={handleCloseAdjustment}> Close</Button>
+                <FormControl
+                  sx={{
+                    marginTop: 1,
+                  }}
+                >
+                  <Button
+                    sx={saveButtonAdjusment}
+                    onClick={updateUserAttendance}
+                    disabled={aLoading}
+                  >
+                    Save
+                  </Button>
+                </FormControl>
+                <FormControl
+                  sx={{
+                    marginTop: 1,
+                  }}
+                >
+                  <Button
+                    sx={closeButtonAdjusment}
+                    onClick={handleCloseAdjustment}
+                  >
+                    Close
+                  </Button>
+                </FormControl>
                 {/* <DialogActions>
                 <Button onClick={handleCloseAdjustment}>Close</Button>
 
@@ -1342,9 +1388,32 @@ const adjusmentModal = {
   left: "50%",
   transform: "translate(-50%, -50%)",
   width: 300,
-  height: 400,
+  height: 375,
   bgcolor: "background.paper",
   border: "2px solid #000",
   boxShadow: 24,
   p: 4,
+};
+
+const closeButtonAdjusment = {
+  "&:hover": {
+    backgroundColor: "#F7374F",
+  },
+  "&:active": {
+    backgroundColor: "#D2665A",
+  },
+  backgroundColor: "#A62C2C",
+  color: "white",
+};
+
+const saveButtonAdjusment = {
+  "&:hover": {
+    backgroundColor: "#C68EFD",
+  },
+  "&:active": {
+    backgroundColor: "#E9A5F1",
+  },
+  backgroundColor: "#8F87F1",
+  color: "white",
+  marginTop: 1,
 };
