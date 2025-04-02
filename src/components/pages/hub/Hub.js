@@ -281,7 +281,7 @@ export default function Hub() {
 
   async function getHub() {
     await axios
-      .post("https://rider-monitoring-app-backend.onrender.com/fetch-hub")
+      .post("http://192.168.50.139:8082/fetch-hub")
       .then(async (response) => {
         const data = await response.data.data;
 
@@ -305,7 +305,7 @@ export default function Hub() {
 
   async function setStatus() {
     await axios
-      .put("https://rider-monitoring-app-backend.onrender.com/update-hub-status", requestBody)
+      .put("http://192.168.50.139:8082/update-hub-status", requestBody)
       .then(async (response) => {
         const data = await response.data.data;
 
@@ -326,7 +326,7 @@ export default function Hub() {
     };
 
     await axios
-      .post("https://rider-monitoring-app-backend.onrender.com/create-hub", hubData)
+      .post("http://192.168.50.139:8082/create-hub", hubData)
       .then(async (response) => {
         const date = await response.data;
         console.log("success");
@@ -347,7 +347,7 @@ export default function Hub() {
     };
 
     await axios
-      .post("https://rider-monitoring-app-backend.onrender.com/edit-hub", hubData)
+      .post("http://192.168.50.139:8082/edit-hub", hubData)
       .then(async (response) => {
         const date = await response.data;
         console.log("success");
