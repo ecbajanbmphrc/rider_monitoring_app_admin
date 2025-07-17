@@ -70,7 +70,7 @@ export default function ForgotPassword() {
 
 
     await  axios
-        .post('https://rider-monitoring-app-backend.onrender.com/send-otp-forgot-password', body)
+        .post('http://54.255.154.99:8082/send-otp-forgot-password', body)
         .then(async response=> {
           const res = await response.data;
    
@@ -193,7 +193,7 @@ export default function ForgotPassword() {
 
 
         axios
-        .put('https://rider-monitoring-app-backend.onrender.com/forgot-password-reset', body)
+        .put('http://54.255.154.99:8082/forgot-password-reset', body)
         .then(async response=> {
           const res = await response.data;
    
