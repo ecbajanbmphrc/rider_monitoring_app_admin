@@ -188,7 +188,7 @@ export default function ViewParcel(){
         const body = {user: userEmail};
 
         await  axios
-          .post('https://rider-monitoring-app-backend.onrender.com/retrieve-user-parcel-data', body)
+          .post('http://54.255.154.99:8082/retrieve-user-parcel-data', body)
           .then(async response=> {
             const data = await response.data.data;
 
@@ -222,7 +222,7 @@ export default function ViewParcel(){
       const body = {user: userEmail, begin , end };
 
       await  axios
-        .post('https://rider-monitoring-app-backend.onrender.com/retrieve-user-parcel-data', body)
+        .post('http://54.255.154.99:8082/retrieve-user-parcel-data', body)
         .then(async response=> {
           const data = await response.data.data;
 
@@ -279,7 +279,7 @@ export default function ViewParcel(){
       const body = {user: userEmail, begin: begin , end: end };
 
       await  axios
-        .post('https://rider-monitoring-app-backend.onrender.com/retrieve-user-parcel-data-filtered-date', body)
+        .post('http://54.255.154.99:8082/retrieve-user-parcel-data-filtered-date', body)
         .then(async response=> {
           const data = await response.data.data;
 

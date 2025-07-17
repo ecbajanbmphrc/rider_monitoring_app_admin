@@ -54,7 +54,7 @@ export default function LogIn() {
     console.log(body)
 
     await  axios
-        .post('https://rider-monitoring-app-backend.onrender.com/login-admin', body)
+        .post('http://54.255.154.99:8082/login-admin', body)
         .then(async response=> {
           const data = await response.data;
 
