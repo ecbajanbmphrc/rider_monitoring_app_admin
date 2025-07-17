@@ -54,7 +54,7 @@ export default function LogIn() {
     console.log(body)
 
     await  axios
-        .post('http://54.255.154.99:8082/login-admin', body)
+        .post('https://api-rma.bmphrc.com/login-admin', body)
         .then(async response=> {
           const data = await response.data;
 

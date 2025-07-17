@@ -246,7 +246,7 @@ export default function Parcel() {
     };
 
     await axios
-      .post("http://54.255.154.99:8082/retrieve-parcel-data", passData)
+      .post("https://api-rma.bmphrc.com/retrieve-parcel-data", passData)
       .then(async (response) => {
         const data = await response.data.data;
 
@@ -346,7 +346,7 @@ export default function Parcel() {
     };
 
     await axios
-      .post("http://54.255.154.99:8082/export-parcel-data", passData)
+      .post("https://api-rma.bmphrc.com/export-parcel-data", passData)
       .then(async (response) => {
         const data = await response.data.data;
 

@@ -214,7 +214,7 @@ export default function ViewAttendance() {
     console.log(userEmail, "test email");
 
     await axios
-      .post("http://54.255.154.99:8082/view-user-attendance", body)
+      .post("https://api-rma.bmphrc.com/view-user-attendance", body)
       .then(async (response) => {
         const data = await response.data.data;
         
