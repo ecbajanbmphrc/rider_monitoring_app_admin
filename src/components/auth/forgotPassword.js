@@ -70,7 +70,7 @@ export default function ForgotPassword() {
 
 
     await  axios
-        .post('http://54.255.154.99:8082/send-otp-forgot-password', body)
+        .post('https://api-rma.bmphrc.com/send-otp-forgot-password', body)
         .then(async response=> {
           const res = await response.data;
    
@@ -193,7 +193,7 @@ export default function ForgotPassword() {
 
 
         axios
-        .put('http://54.255.154.99:8082/forgot-password-reset', body)
+        .put('https://api-rma.bmphrc.com/forgot-password-reset', body)
         .then(async response=> {
           const res = await response.data;
    

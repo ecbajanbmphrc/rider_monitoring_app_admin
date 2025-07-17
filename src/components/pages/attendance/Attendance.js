@@ -456,7 +456,7 @@ export default function Attendance() {
 
     await axios
       .post(
-        "http://54.255.154.99:8082/retrieve-user-attendance-today",
+        "https://api-rma.bmphrc.com/retrieve-user-attendance-today",
         passData
       )
       .then(async (response) => {
@@ -504,7 +504,7 @@ export default function Attendance() {
     };
 
     await axios
-      .post("http://54.255.154.99:8082/export-attendance-data", passData)
+      .post("https://api-rma.bmphrc.com/export-attendance-data", passData)
       .then(async (response) => {
         const data = await response.data.data;
 
@@ -840,7 +840,7 @@ export default function Attendance() {
     };
 
     await axios
-      .post("http://54.255.154.99:8082/select-user-date-attendance", getData)
+      .post("https://api-rma.bmphrc.com/select-user-date-attendance", getData)
       .then(async (response) => {
         const data = await response.data.data;
 
@@ -971,7 +971,7 @@ export default function Attendance() {
     }).then(async (result)=> {
       if(result.isConfirmed){
       await axios
-      .put("http://54.255.154.99:8082/update-user-attendance", setData)
+      .put("https://api-rma.bmphrc.com/update-user-attendance", setData)
       .then(async (response) => {
         const data = await response.data.status;
         if (data === 200) {

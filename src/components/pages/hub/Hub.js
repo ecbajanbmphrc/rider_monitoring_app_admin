@@ -281,7 +281,7 @@ export default function Hub() {
 
   async function getHub() {
     await axios
-      .post("http://54.255.154.99:8082/fetch-hub")
+      .post("https://api-rma.bmphrc.com/fetch-hub")
       .then(async (response) => {
         const data = await response.data.data;
 
@@ -305,7 +305,7 @@ export default function Hub() {
 
   async function setStatus() {
     await axios
-      .put("http://54.255.154.99:8082/update-hub-status", requestBody)
+      .put("https://api-rma.bmphrc.com/update-hub-status", requestBody)
       .then(async (response) => {
         const data = await response.data.data;
 
@@ -326,7 +326,7 @@ export default function Hub() {
     };
 
     await axios
-      .post("http://54.255.154.99:8082/create-hub", hubData)
+      .post("https://api-rma.bmphrc.com/create-hub", hubData)
       .then(async (response) => {
         const date = await response.data;
         console.log("success");
@@ -347,7 +347,7 @@ export default function Hub() {
     };
 
     await axios
-      .post("http://54.255.154.99:8082/edit-hub", hubData)
+      .post("https://api-rma.bmphrc.com/edit-hub", hubData)
       .then(async (response) => {
         const date = await response.data;
         console.log("success");

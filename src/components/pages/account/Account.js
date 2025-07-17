@@ -344,7 +344,7 @@ export default function Account() {
 
   async function getUser() {
     await axios
-      .post("http://54.255.154.99:8082/get-rider-user", requestBody)
+      .post("https://api-rma.bmphrc.com/get-rider-user", requestBody)
       .then(async (response) => {
         const data = await response.data.data;
 
@@ -378,7 +378,7 @@ export default function Account() {
 
   async function getHubList() {
     await axios
-      .post("http://54.255.154.99:8082/fetch-hub", requestBody)
+      .post("https://api-rma.bmphrc.com/fetch-hub", requestBody)
       .then(async (response) => {
         const data = await response.data.data;
 
@@ -401,7 +401,7 @@ export default function Account() {
   async function setStatus() {
     console.log("check body", requestBody);
     await axios
-      .put("http://54.255.154.99:8082/update-status", requestBody)
+      .put("https://api-rma.bmphrc.com/update-status", requestBody)
       .then(async (response) => {
         const data = await response.data.status;
 
@@ -430,7 +430,7 @@ export default function Account() {
 
   async function updateUserHub() {
     await axios
-      .put("http://54.255.154.99:8082/update-user-hub", {
+      .put("https://api-rma.bmphrc.com/update-user-hub", {
         hub_id: updateHub,
         email: modalEmail,
       })
@@ -470,7 +470,7 @@ export default function Account() {
 
   async function updateUserDetails() {
     await axios
-      .put("http://54.255.154.99:8082/update-user-detail-admin", {
+      .put("https://api-rma.bmphrc.com/update-user-detail-admin", {
         rider_id: modalRiderId,
         first_name: modalFirstName,
         middle_name: modalMiddleName,
