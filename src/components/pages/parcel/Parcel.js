@@ -1,6 +1,6 @@
 import "./parcel.css";
 import React, { useEffect, useState } from "react";
-import { GridToolbar, DataGrid } from "@mui/x-data-grid";
+import { GridToolbar, DataGrid, gridColumnGroupsUnwrappedModelSelector } from "@mui/x-data-grid";
 import axios from "axios";
 import { Button, Stack, buttonBaseClasses } from "@mui/material";
 import ImageList from "@mui/material/ImageList";
@@ -344,17 +344,20 @@ export default function Parcel() {
       start: bDate,
       end: eDate,
     };
+    console.log("start", bDate);
+    console.log("end", eDate);
 
     await axios
       .post("https://api-rma.bmphrc.com/export-parcel-data", passData)
       .then(async (response) => {
         const data = await response.data.data;
 
-        console.log(data);
+        console.log(data, "export");
 
         const newData = data.map((data, key) => {
           return {
             count: key + 1,
+            id: data.rider_id? data.rider_id : "-",
             fullname: data.first_name + " " + data.last_name,
             email: data.email,
             date: data.date,
@@ -376,6 +379,7 @@ export default function Parcel() {
           { wch: 4 },
           { wch: 25 },
           { wch: 25 },
+          { wch: 25 },
           { wch: 10 },
           { wch: 15 },
           { wch: 15 },
@@ -385,7 +389,7 @@ export default function Parcel() {
 
         XLSX.utils.sheet_add_aoa(
           ws,
-          [["#", "Fullname", "Email", "Date", "Bulk", "Non-Bulk", "Total", "Assigned Parcel"]],
+          [["#","Rider ID" ,"Fullname", "Email", "Date", "Bulk", "Non-Bulk", "Total", "Assigned Parcel"]],
           { origin: "A1" }
         );
 
@@ -538,6 +542,27 @@ export default function Parcel() {
         };
 
         ws["H1"].s = {
+          // set the style for target cell
+          font: {
+            name: "#",
+            sz: 10,
+            bold: true,
+            color: {
+              rgb: "FFFFFFF",
+            },
+          },
+          alignment: {
+            vertical: "center",
+            horizontal: "center",
+          },
+          fill: {
+            patternType: "solid",
+            bgColor: {
+              rgb: "FFFFFFF",
+            },
+          },
+        };
+        ws["I1"].s = {
           // set the style for target cell
           font: {
             name: "#",
